@@ -1,0 +1,1 @@
+export const dbFilePath: string = `${Deno.cwd()}/entries.db`;
