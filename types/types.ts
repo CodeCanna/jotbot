@@ -5,7 +5,7 @@ export type Entry = {
     mood: Mood,
     situation: string,
     automaticThoughts: string,
-    selfiePath?: string
+    selfiePath: string | null
 };
 
 export type Mood = {

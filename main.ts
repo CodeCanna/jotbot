@@ -18,6 +18,7 @@ import {
   commands,
   type CommandsFlavor,
 } from "@grammyjs/commands";
+import { FileFlavor, hydrateFiles } from "@grammyjs/files";
 
 if (import.meta.main) {
   // Check if database is present and if not create one
@@ -33,13 +34,15 @@ if (import.meta.main) {
   } catch (err) {
     console.log(`Error creating database: ${err}`);
   }
-  type JotBotContext = Context & CommandsFlavor & ConversationFlavor<Context>;
+  type JotBotContext = Context & CommandsFlavor & ConversationFlavor<Context> & FileFlavor<Context>;
   const jotBot = new Bot<JotBotContext>(
     Deno.env.get("TELEGRAM_BOT_KEY") || "",
   );
 
+  jotBot.api.config.use(hydrateFiles(jotBot.token));
+
   const jotBotCommands = new CommandGroup<JotBotContext>();
-  jotBot.use(commands<Context>()); // This must be registered before the other .use calls
+  jotBot.use(commands()); // This must be registered before the other .use calls
 
   jotBotCommands.command("start", "Starts the bot.", async (ctx) => {
     // Check if user exists in Database
@@ -140,6 +143,7 @@ if (import.meta.main) {
           moodEmoji: entryQueryResults[e].moodEmoji?.toString()!,
           moodDescription: entryQueryResults[e].moodDescription?.toString()!,
         },
+        selfiePath: ""
       };
 
       const entryDate = new Date(entry.timestamp);
@@ -162,11 +166,17 @@ if (import.meta.main) {
         ).text(entryString, { parse_mode: "HTML" }),
       );
     }
-    console.log(entries);
+
     await ctx.answerInlineQuery(entries, {
       cache_time: 0,
       is_personal: true,
     });
+  });
+
+  jotBot.on(":photo", async (ctx) => {
+    const file = await ctx.getFile();
+
+    const fileDownload = file.download();
   });
 
   jotBot.catch((err) => {
