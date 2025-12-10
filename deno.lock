@@ -7,6 +7,7 @@
     "jsr:@std/path@1.1.2": "1.1.2",
     "npm:@grammyjs/commands@^1.2.0": "1.2.0_grammy@1.38.4",
     "npm:@grammyjs/conversations@^2.1.1": "2.1.1_grammy@1.38.4",
+    "npm:@grammyjs/files@^1.2.0": "1.2.0_grammy@1.38.4",
     "npm:@types/node@*": "24.2.0",
     "npm:grammy@^1.38.4": "1.38.4",
     "npm:redis@*": "5.10.0_@redis+client@5.10.0",
@@ -38,6 +39,12 @@
     },
     "@grammyjs/conversations@2.1.1_grammy@1.38.4": {
       "integrity": "sha512-hoxqwSkaXDeU7mzXulpk3A4Cmd6UZO3HU4aPoITX5ekSHK7ZcUEmMl7RhKKkqw3z6zVbbAShQreJoVV5/dDSLA==",
+      "dependencies": [
+        "grammy"
+      ]
+    },
+    "@grammyjs/files@1.2.0_grammy@1.38.4": {
+      "integrity": "sha512-UhQNGe2gpGgGMdrAUFXrZld3qQjt/3oYBHIo1aU0zIrKKvI5bgxzXSjPaJpx69HUO9mM7TbOaSsJL8lWbqnzJw==",
       "dependencies": [
         "grammy"
       ]
@@ -202,6 +209,7 @@
       "jsr:@std/assert@1",
       "npm:@grammyjs/commands@^1.2.0",
       "npm:@grammyjs/conversations@^2.1.1",
+      "npm:@grammyjs/files@^1.2.0",
       "npm:grammy@^1.38.4",
       "npm:redis@^5.10.0"
     ]
