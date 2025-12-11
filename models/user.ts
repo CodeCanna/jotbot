@@ -5,8 +5,8 @@ export function insertUser(user: User) {
     const db = new DatabaseSync("db/jotbot.db");
 
     db.prepare(`
-        INSERT INTO user_db (telegramId, username, dob) VALUES (?,?,?);
-    `).run(user.telegramId, user.username, user.dob.getTime());
+        INSERT INTO user_db (telegramId, username, dob, joinedDate) VALUES (?, ?, ?, ?);
+    `).run(user.telegramId, user.username, user.dob.getTime(), user.joinedDate.getTime());
 
     db.close();
 }

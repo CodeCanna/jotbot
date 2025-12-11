@@ -12,7 +12,7 @@ export function createEntryTable() {
             situation TEXT NOT NULL, 
             automaticThoughts TEXT NOT NULL,
             moodName TEXT NOT NULL,
-            moodEmoji TEXT NOT NULL,
+            moodEmoji TEXT,
             moodDescription TEXT NOT NULL,
             selfiePath TEXT,
             FOREIGN KEY (userId) REFERENCES user_db(telegramId)
@@ -34,7 +34,8 @@ export function createUserTable() {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 telegramId INTEGER UNIQUE,
                 username TEXT NOT NULL UNIQUE,
-                dob INTEGER NOT NULL
+                dob INTEGER NOT NULL,
+                joinedDate INTEGER NOT NULL
             );
         `).run();
         db.close();

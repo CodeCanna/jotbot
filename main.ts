@@ -1,14 +1,14 @@
-import { Bot, Context, InlineKeyboard, InlineQueryResultBuilder } from "grammy";
+import { Bot, Context, InlineQueryResultBuilder } from "grammy";
 import {
   type ConversationFlavor,
   conversations,
   createConversation,
 } from "@grammyjs/conversations";
-import { record } from "./handlers/record.ts";
-import { start } from "./handlers/start.ts";
+import { new_entry } from "./handlers/new_entry.ts";
+import { register } from "./handlers/register.ts";
 import { existsSync } from "node:fs";
 import { createEntryTable, createUserTable } from "./db/migration.ts";
-import { deleteUser, userExists } from "./models/user.ts";
+import { userExists } from "./models/user.ts";
 import { deleteEntry, getAllEntries } from "./models/entry.ts";
 import { Entry } from "./types/types.ts";
 import { InlineQueryResult } from "grammy/types";
@@ -19,6 +19,9 @@ import {
   type CommandsFlavor,
 } from "@grammyjs/commands";
 import { FileFlavor, hydrateFiles } from "@grammyjs/files";
+import { registerKeyboard } from "./utils/keyboards.ts";
+import { delete_account } from "./handlers/delete_account.ts";
+import { delete_entry } from "./handlers/delete_entry.ts";
 
 if (import.meta.main) {
   // Check if database is present and if not create one
@@ -34,15 +37,25 @@ if (import.meta.main) {
   } catch (err) {
     console.log(`Error creating database: ${err}`);
   }
-  type JotBotContext = Context & CommandsFlavor & ConversationFlavor<Context> & FileFlavor<Context>;
+  type JotBotContext =
+    & Context
+    & CommandsFlavor
+    & ConversationFlavor<Context>
+    & FileFlavor<Context>;
+
   const jotBot = new Bot<JotBotContext>(
     Deno.env.get("TELEGRAM_BOT_KEY") || "",
   );
-
   jotBot.api.config.use(hydrateFiles(jotBot.token));
-
   const jotBotCommands = new CommandGroup<JotBotContext>();
-  jotBot.use(commands()); // This must be registered before the other .use calls
+  jotBot.use(commands());
+  jotBot.use(conversations());
+
+
+  // Setup the conversations and commands
+  jotBot.use(createConversation(register))
+  jotBot.use(createConversation(new_entry))
+  jotBot.use(createConversation(delete_account))
 
   jotBotCommands.command("start", "Starts the bot.", async (ctx) => {
     // Check if user exists in Database
@@ -54,30 +67,34 @@ if (import.meta.main) {
           (await ctx.getAuthor()).user.username
         }!  I can see you are a new user, would you like to register now?`,
         {
-          reply_markup: new InlineKeyboard().text(
-            "Register",
-            "register-new-user",
-          ),
+          reply_markup: registerKeyboard,
         },
       );
     } else {
       await ctx.reply(
         `Hello ${
           (await ctx.getAuthor()).user.username
-        } you have already completed the onboarding proces.`,
+        } you have already completed the onboarding process.`,
       );
     }
   });
 
-  jotBotCommands.command("record", "Record a mood entry.", async (ctx) => {
+  jotBotCommands.command("register", "Register new user", async (ctx) => {
+    await ctx.reply("Starting the registration process.", {
+      reply_markup: registerKeyboard,
+    });
+  });
+
+  jotBotCommands.command("new_entry", "Create new entry", async (ctx) => {
     if (!userExists((await ctx.getAuthor()).user.id)) {
       await ctx.reply(
         `Hello ${
           (await ctx.getAuthor()).user.username
-        }!  It looks like you haven't completed the onboarding process yet.\nPlease run /start to begin!`,
+        }!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+        { reply_markup: registerKeyboard },
       );
     } else {
-      await ctx.conversation.enter("record");
+      await ctx.conversation.enter("new_entry");
     }
   });
 
@@ -85,7 +102,7 @@ if (import.meta.main) {
     "delete_account",
     "Delete your accound and all entries.",
     async (ctx) => {
-      deleteUser((await ctx.getAuthor()).user.id);
+      await ctx.conversation.enter("delete_account");
     },
   );
 
@@ -105,28 +122,6 @@ if (import.meta.main) {
     },
   );
 
-  // Setup the conversations and commands
-  jotBot.use(conversations())
-    .use(createConversation(start))
-    .use(createConversation(record))
-    .use(jotBotCommands);
-  // jotBot.filter(commandNotFound(jotBotCommands))
-  //   .use(conversations())
-  //   .use(createConversation(record))
-  //   .use(createConversation(start))
-  //   .use(async (ctx) => {
-  //     if (ctx.commandSuggestion) {
-  //       return ctx.reply(
-  //         `Invalid command, did you mean ${ctx.commandSuggestion}?`,
-  //       );
-  //     }
-  //     await ctx.reply("Invalid Command");
-  //   });
-
-  jotBot.callbackQuery("register-new-user", async (ctx) => {
-    await ctx.conversation.enter("start");
-  });
-
   jotBot.on("inline_query", async (ctx) => {
     const entryQueryResults = getAllEntries(ctx.inlineQuery.from.id);
 
@@ -143,12 +138,13 @@ if (import.meta.main) {
           moodEmoji: entryQueryResults[e].moodEmoji?.toString()!,
           moodDescription: entryQueryResults[e].moodDescription?.toString()!,
         },
-        selfiePath: ""
+        selfiePath: entryQueryResults[e].selfiePath?.toString()!,
       };
 
       const entryDate = new Date(entry.timestamp);
       // Build string
-      const entryString = `<b><u>Entry Date ${entryDate.toLocaleString()}</u></b>
+      const entryString =
+        `<b><u>Entry Date ${entryDate.toLocaleString()}</u></b>
       <b>Mood</b> ${entry.mood.moodName} ${entry.mood.moodEmoji}
 
       <b><u>Mood Description</u></b>
@@ -159,12 +155,26 @@ if (import.meta.main) {
 
       <b><u>Automatic Thoughts</u></b>
       ${entry.automaticThoughts}`;
-      entries.push(
-        InlineQueryResultBuilder.article(
-          String(entry.id),
-          entryDate.toLocaleString(),
-        ).text(entryString, { parse_mode: "HTML" }),
-      );
+
+      if (entry.selfiePath) {
+        console.log(`file://${entry.selfiePath}`);
+        entries.push(
+          InlineQueryResultBuilder.article(
+            String(entry.id),
+            entryDate.toLocaleString(),
+            {
+              thumbnail_url: `file://${entry.selfiePath}`,
+            },
+          ).text(entryString, { parse_mode: "HTML" }),
+        );
+      } else {
+        entries.push(
+          InlineQueryResultBuilder.article(
+            String(entry.id),
+            entryDate.toLocaleString(),
+          ).text(entryString, { parse_mode: "HTML" }),
+        );
+      }
     }
 
     await ctx.answerInlineQuery(entries, {
@@ -173,16 +183,26 @@ if (import.meta.main) {
     });
   });
 
-  jotBot.on(":photo", async (ctx) => {
-    const file = await ctx.getFile();
+  jotBot.callbackQuery("register-new-user", async (ctx) => {
+    await ctx.conversation.enter("register");
+  });
 
-    const fileDownload = file.download();
+  jotBot.callbackQuery("new-entry", async (ctx) => {
+    await ctx.conversation.enter("new_entry");
   });
 
   jotBot.catch((err) => {
     console.log(`JotBot Error: ${err.message}`);
   });
-
-  await jotBotCommands.setCommands(jotBot);
+  jotBot.use(jotBotCommands);
+  jotBot.filter(commandNotFound(jotBotCommands))
+    .use(async (ctx) => { // Suggest closest command from an invalid command attempt
+      if (ctx.commandSuggestion) {
+        return ctx.reply(
+          `Invalid command, did you mean ${ctx.commandSuggestion}?`,
+        );
+      }
+      await ctx.reply("Invalid Command");
+    });
   jotBot.start();
 }

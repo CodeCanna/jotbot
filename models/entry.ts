@@ -35,7 +35,6 @@ export function getAllEntries(userId: number): Record<string, SQLInputValue>[] {
       `Jotbot Error: Failed retrieving all entries for user ${userId}: ${err}`,
     );
   }
-  console.log(entries);
   return entries;
 }
 
