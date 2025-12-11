@@ -2,16 +2,16 @@ export type Entry = {
   id?: number;
   userId: number;
   timestamp: number;
-  mood: Mood;
+  emotion: Emotion;
   situation: string;
   automaticThoughts: string;
   selfiePath: string | null;
 };
 
-export type Mood = {
-  moodName: string;
-  moodEmoji: string;
-  moodDescription: string;
+export type Emotion = {
+  emotionName: string;
+  emotionEmoji: string;
+  emotionDescription: string;
 };
 
 export type User = {
