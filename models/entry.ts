@@ -5,29 +5,43 @@ export function insertEntry(entry: Entry) {
   const db = new DatabaseSync("db/jotbot.db");
   db.exec("PRAGMA foreign_keys = ON;");
   db.prepare(
-    `INSERT INTO entry_db (userId, timestamp, situation, automaticThoughts, moodName, moodEmoji, moodDescription, selfiePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO entry_db (userId, timestamp, situation, automaticThoughts, emotionName, emotionEmoji, emotionDescription, selfiePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     entry.userId,
     entry.timestamp,
     entry.situation,
     entry.automaticThoughts,
-    entry.mood.moodName,
-    entry.mood.moodEmoji,
-    entry.mood.moodDescription,
+    entry.emotion.emotionName,
+    entry.emotion.emotionEmoji,
+    entry.emotion.emotionDescription,
     entry.selfiePath,
   );
   db.close();
 }
 
-export function getEntriesByUserId(userId: number): Record<string, SQLInputValue>[] {
+export function getEntriesByUserId(userId: number): Entry[] {
   const entries = [];
   try {
     const db = new DatabaseSync("db/jotbot.db");
     const queryResults = db.prepare(
       `SELECT * FROM entry_db WHERE userId = '${userId}' ORDER BY timestamp DESC`,
     ).all();
-    for (const entry in queryResults) {
-      entries.push(queryResults[entry]);
+    for (const e in queryResults) {
+      const entry: Entry = {
+        id: Number(queryResults[e].id!),
+        userId: Number(queryResults[e].userId!),
+        timestamp: Number(queryResults[e].timestamp!),
+        situation: queryResults[e].situation?.toString()!,
+        automaticThoughts: queryResults[e].automaticThoughts?.toString()!,
+        emotion: {
+          emotionName: queryResults[e].emotionName?.toString()!,
+          emotionEmoji: queryResults[e].emotionEmoji?.toString()!,
+          emotionDescription: queryResults[e].emotionDescription?.toString()!,
+        },
+        selfiePath: queryResults[e].selfiePath?.toString()!,
+      };
+
+      entries.push(entry);
     }
     db.close();
   } catch (err) {
