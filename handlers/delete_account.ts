@@ -25,7 +25,7 @@ export async function delete_account(conversation: Conversation, ctx: Context) {
     await ctx.reply(`Okay ${ctx.from?.username} your account has been terminated along with all of your entries.  Thanks for trying Jotbot!`);
   } catch (err) {
     console.log(
-      `Failed to delete user ${(await ctx.getAuthor()).user.username}: ${err}`,
+      `Failed to delete user ${ctx.from?.username}: ${err}`,
     );
   }
 }
