@@ -11,9 +11,9 @@ export function createEntryTable() {
             timestamp INTEGER NOT NULL,
             situation TEXT NOT NULL, 
             automaticThoughts TEXT NOT NULL,
-            moodName TEXT NOT NULL,
-            moodEmoji TEXT,
-            moodDescription TEXT NOT NULL,
+            emotionName TEXT NOT NULL,
+            emotionEmoji TEXT,
+            emotionDescription TEXT NOT NULL,
             selfiePath TEXT,
             FOREIGN KEY (userId) REFERENCES user_db(telegramId)
             ON DELETE CASCADE
