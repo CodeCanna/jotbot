@@ -144,19 +144,19 @@ if (import.meta.main) {
       const entryDate = new Date(entries[entry].timestamp);
       // Build string
       const entryString = `
-        <b><u>Entry Date ${entryDate.toLocaleString()}</u></b>
-        <b><u>Emotion</u></b>
-        ${entries[entry].emotion.emotionName} ${entries[entry].emotion.emotionEmoji}
+Date ${entryDate.toLocaleString()}
+<b><u>Emotion</u></b>
+${entries[entry].emotion.emotionName} ${entries[entry].emotion.emotionEmoji}
 
-        <b><u>Emotion Description</u></b>
-        ${entries[entry].emotion.emotionDescription}
+<b><u>Emotion Description</u></b>
+${entries[entry].emotion.emotionDescription}
 
-        <b><u>Situation</u></b>
-        ${entries[entry].situation}
+<b><u>Situation</u></b>
+${entries[entry].situation}
 
-        <b><u>Automatic Thoughts</u></b>
-        ${entries[entry].automaticThoughts}
-        `;
+<b><u>Automatic Thoughts</u></b>
+${entries[entry].automaticThoughts}
+`;
 
       entriesInlineQueryResults.push(
         InlineQueryResultBuilder.article(
