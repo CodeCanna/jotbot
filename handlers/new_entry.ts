@@ -46,8 +46,8 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
   }
 
   ctx.reply("Would you like to take a selfie?", {
-    reply_markup: new InlineKeyboard().text("Yes", "selfie-yes").text(
-      "No",
+    reply_markup: new InlineKeyboard().text("✅ Yes", "selfie-yes").text(
+      "⛔ No",
       "selfie-no",
     ),
   });
