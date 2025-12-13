@@ -10,7 +10,8 @@ export async function view_entries(conversation: Conversation, ctx: Context) {
 
   const entryString = `
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
-<b>Date<b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
+
+<b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
 <b><u>Emotion</u></b>
 ${entries[currentEntry].emotion.emotionName} ${
     entries[currentEntry].emotion.emotionEmoji
@@ -96,8 +97,9 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
       currentEntry >= 0
     ) {
       nextEntryString = `
-Entry <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
-<b>Date<b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
+Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
+
+<b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
 <b><u>Emotion</u></b>
 ${entries[currentEntry].emotion.emotionName} ${
         entries[currentEntry].emotion.emotionEmoji
