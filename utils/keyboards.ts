@@ -1,5 +1,4 @@
 import { InlineKeyboard, Keyboard } from "grammy";
-import { Key } from "node:readline";
 
 export const registerKeyboard = new InlineKeyboard().text(
   "Register",
@@ -14,7 +13,7 @@ export const viewEntriesKeyboard: InlineKeyboard = new InlineKeyboard()
   .text("⏮️", "previous-entry")
   .text("💣 Delete 💣", "delete-entry")
   .text("⏭️", "next-entry").row()
-  .text("🔙", "view-entry-backbutton");
+  .text("Exit", "view-entry-backbutton");
 
 export const mainCustomKeyboard: Keyboard = new Keyboard()
   .text("/new_entry").row()
@@ -27,8 +26,7 @@ export const mainCustomKeyboard: Keyboard = new Keyboard()
 
 export const mainKittyKeyboard: InlineKeyboard = new InlineKeyboard()
   .text("🐱 Random Kitty 🎲", "random-kitty").row()
-  .text("🐱 Specific Kitty", "specific-kitty").row()
   .text("Kitty Gif", "kitty-gif")
   .text("Kitty Says", "kitty-says").row()
-  .text("Inspirational Kitty", "inspiration-kitty").row()
+  .text("Inspirational 🐱", "inspiration-kitty").row()
   .text("Exit", "kitty-exit");
