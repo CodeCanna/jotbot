@@ -118,7 +118,7 @@ ${entries[currentEntry].automaticThoughts}
     } else if (currentEntry >= entries.length && (!entries[currentEntry])) {
       const viewEntriesKeyboard = new InlineKeyboard()
         .text("⏮️", "previous-entry").row()
-        .text("🔙 Back", "view-entry-backbutton");
+        .text("🔙", "view-entry-backbutton");
 
       await viewEntryCtx.editMessageText("End of list", {
         reply_markup: viewEntriesKeyboard,
@@ -127,7 +127,7 @@ ${entries[currentEntry].automaticThoughts}
     } else if (currentEntry <= 0 && (!entries[currentEntry])) {
       const viewEntriesKeyboard = new InlineKeyboard()
         .text("⏭️", "next-entry").row()
-        .text("🔙 Back", "view-entry-backbutton");
+        .text("🔙", "view-entry-backbutton");
 
       await viewEntryCtx.editMessageText("Beginning of list", {
         reply_markup: viewEntriesKeyboard,
