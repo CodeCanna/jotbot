@@ -10,7 +10,6 @@ import { existsSync } from "node:fs";
 import { createEntryTable, createUserTable } from "./db/migration.ts";
 import { userExists } from "./models/user.ts";
 import { deleteEntry, getEntriesByUserId } from "./models/entry.ts";
-import { Entry } from "./types/types.ts";
 import { InlineQueryResult } from "grammy/types";
 import {
   CommandGroup,
@@ -21,7 +20,6 @@ import {
 import { FileFlavor, hydrateFiles } from "@grammyjs/files";
 import { mainCustomKeyboard, registerKeyboard } from "./utils/keyboards.ts";
 import { delete_account } from "./handlers/delete_account.ts";
-import { delete_entry } from "./handlers/delete_entry.ts";
 import { view_entries } from "./handlers/view_entries.ts";
 import { crisisString, helpString } from "./constants/strings.ts";
 
