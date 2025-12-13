@@ -23,7 +23,7 @@ import { mainCustomKeyboard, registerKeyboard } from "./utils/keyboards.ts";
 import { delete_account } from "./handlers/delete_account.ts";
 import { delete_entry } from "./handlers/delete_entry.ts";
 import { view_entries } from "./handlers/view_entries.ts";
-import { crisisString } from "./constants/strings.ts";
+import { crisisString, helpString } from "./constants/strings.ts";
 
 if (import.meta.main) {
   // Check if database is present and if not create one
@@ -78,6 +78,10 @@ if (import.meta.main) {
     }
   });
 
+  jotBotCommands.command("help", "Show how to use the bot", async (ctx) => {
+    await ctx.reply(helpString, {parse_mode: "HTML"});
+  });
+
   jotBotCommands.command("register", "Register new user", async (ctx) => {
     await ctx.reply("Starting the registration process.", {
       reply_markup: registerKeyboard,
@@ -128,7 +132,7 @@ if (import.meta.main) {
   );
 
   jotBotCommands.command(
-    "🆘",
+    /(🆘|(?:sos)|)/, // ?: matches upper or lower case so no matter how sos is typed it will recognize it.
     "Show helplines and other crisis information.",
     async (ctx) => {
       await ctx.reply(crisisString.replace("<username>", ctx.from?.username!), {
@@ -164,25 +168,6 @@ ${entries[entry].automaticThoughts}
           entryDate.toLocaleString(),
         ).text(entryString, { parse_mode: "HTML" }),
       );
-      // if (entry.selfiePath) {
-      //   console.log(`file://${entry.selfiePath}`);
-      //   entries.push(
-      //     InlineQueryResultBuilder.article(
-      //       String(entry.id),
-      //       entryDate.toLocaleString(),
-      //       {
-      //         thumbnail_url: `file://${entry.selfiePath}`,
-      //       },
-      //     ).text(entryString, { parse_mode: "HTML" }),
-      //   );
-      // } else {
-      //   entries.push(
-      //     InlineQueryResultBuilder.article(
-      //       String(entry.id),
-      //       entryDate.toLocaleString(),
-      //     ).text(entryString, { parse_mode: "HTML" }),
-      //   );
-      // }
     }
 
     await ctx.answerInlineQuery(entriesInlineQueryResults, {
