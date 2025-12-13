@@ -22,6 +22,7 @@ import { mainCustomKeyboard, registerKeyboard } from "./utils/keyboards.ts";
 import { delete_account } from "./handlers/delete_account.ts";
 import { view_entries } from "./handlers/view_entries.ts";
 import { crisisString, helpString } from "./constants/strings.ts";
+import { kitties } from "./handlers/kitties.ts";
 
 if (import.meta.main) {
   // Check if database is present and if not create one
@@ -56,6 +57,7 @@ if (import.meta.main) {
   jotBot.use(createConversation(new_entry));
   jotBot.use(createConversation(view_entries));
   jotBot.use(createConversation(delete_account));
+  jotBot.use(createConversation(kitties));
 
   jotBotCommands.command("start", "Starts the bot.", async (ctx) => {
     // Check if user exists in Database
@@ -78,6 +80,10 @@ if (import.meta.main) {
 
   jotBotCommands.command("help", "Show how to use the bot", async (ctx) => {
     await ctx.reply(helpString, {parse_mode: "HTML"});
+  });
+
+  jotBotCommands.command("kitties", "Start the kitty engine!", async (ctx) => {
+    await ctx.conversation.enter("kitties");
   });
 
   jotBotCommands.command("register", "Register new user", async (ctx) => {
