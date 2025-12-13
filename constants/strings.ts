@@ -1,6 +1,9 @@
 export const startString: string = `Hello!  Welcome to JotBot.  I'm here to help you record your emotions and emotion!`;
 export const telegramDownloadUrl = "https://api.telegram.org/file/bot<token>/<file_path>";
 
+export const catImagesApiBaseUrl = `https://cataas.com`;
+export const quotesApiBaseUrl = `https://zenquotes.io/api/quotes/`;
+
 export const crisisString = 
 `
 Hello <username> here are the crisis help lines.
