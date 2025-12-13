@@ -6,7 +6,7 @@ import { deleteUser } from "../models/user.ts";
 export async function delete_account(conversation: Conversation, ctx: Context) {
   try {
     await ctx.reply(
-      `Are you sure you want to <b><u>delete</u></b> your account <b>along with all of your entries</b>`,
+      `⚠️ Are you sure you want to <b><u>delete</u></b> your account <b>along with all of your entries</b> ⚠️`,
       { parse_mode: "HTML", reply_markup: deleteAccountConfirmKeyboard },
     );
 
