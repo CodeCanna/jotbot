@@ -80,7 +80,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
         }
       }
       case ("view-entry-backbutton"): {
-        await viewEntryCtx.editMessageText("Done viewing entries.");
+        await viewEntryCtx.deleteMessage();
         break loop;
       }
       default: {
@@ -124,7 +124,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
     } else if (currentEntry >= entries.length && (!entries[currentEntry])) {
       const viewEntriesKeyboard = new InlineKeyboard()
         .text("⏮️", "previous-entry").row()
-        .text("🔙", "view-entry-backbutton");
+        .text("Exit", "view-entry-backbutton");
 
       await viewEntryCtx.editMessageText("End of list", {
         reply_markup: viewEntriesKeyboard,
@@ -133,7 +133,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
     } else if (currentEntry <= 0 && (!entries[currentEntry])) {
       const viewEntriesKeyboard = new InlineKeyboard()
         .text("⏭️", "next-entry").row()
-        .text("🔙", "view-entry-backbutton");
+        .text("Exit", "view-entry-backbutton");
 
       await viewEntryCtx.editMessageText("Beginning of list", {
         reply_markup: viewEntriesKeyboard,
