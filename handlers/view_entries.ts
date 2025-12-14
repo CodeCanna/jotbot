@@ -5,10 +5,13 @@ import { Entry } from "../types/types.ts";
 import { viewEntriesKeyboard } from "../utils/keyboards.ts";
 
 export async function view_entries(conversation: Conversation, ctx: Context) {
-  let entries: Entry[] = getEntriesByUserId(ctx.from?.id!);
+  let entries: Entry[] = await conversation.external(() =>
+    getEntriesByUserId(ctx.from?.id!)
+  );
   let currentEntry: number = 0;
 
-  const entryString = `
+  // Show first entry in list
+  let entryString = `
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 
 <b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
@@ -28,6 +31,8 @@ ${entries[currentEntry].automaticThoughts}
 
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 `;
+
+  // Reply initially with first entry before starting loop
   await ctx.reply(entryString, {
     reply_markup: viewEntriesKeyboard,
     parse_mode: "HTML",
@@ -42,19 +47,32 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
     ]);
 
     switch (viewEntryCtx.callbackQuery.data) {
-      case ("next-entry"): {
+      case "next-entry": {
+        if (currentEntry >= entries.length - 1) {
+          currentEntry = 0;
+          break;
+        }
+
         currentEntry++;
         break;
       }
-      case ("previous-entry"): {
+      case "previous-entry": {
+        if (currentEntry <= 0) {
+          currentEntry = entries.length - 1;
+          break;
+        }
+
         currentEntry--;
         break;
       }
-      case ("delete-entry"): {
+      case "delete-entry": {
         await viewEntryCtx.editMessageText(
           "Are you sure you want to delete this entry?",
           {
-            reply_markup: new InlineKeyboard().text("✅ Yes", "delete-entry-yes")
+            reply_markup: new InlineKeyboard().text(
+              "✅ Yes",
+              "delete-entry-yes",
+            )
               .text("⛔ No", "delete-entry-no"),
           },
         );
@@ -79,7 +97,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
           break;
         }
       }
-      case ("view-entry-backbutton"): {
+      case "view-entry-backbutton": {
         await viewEntryCtx.deleteMessage();
         break loop;
       }
@@ -90,20 +108,16 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
       }
     }
 
+    console.log(currentEntry);
 
-    let nextEntryString;
-    if (
-      entries[currentEntry] && currentEntry <= entries.length &&
-      currentEntry >= 0
-    ) {
-      nextEntryString = `
+    entryString = `
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 
 <b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
 <b><u>Emotion</u></b>
 ${entries[currentEntry].emotion.emotionName} ${
-        entries[currentEntry].emotion.emotionEmoji
-      }
+      entries[currentEntry].emotion.emotionEmoji
+    }
 
 <b><u>Emotion Description</u></b>
 ${entries[currentEntry].emotion.emotionDescription}
@@ -117,28 +131,9 @@ ${entries[currentEntry].automaticThoughts}
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 `;
 
-      await viewEntryCtx.editMessageText(nextEntryString, {
-        reply_markup: viewEntriesKeyboard,
-        parse_mode: "HTML",
-      });
-    } else if (currentEntry >= entries.length && (!entries[currentEntry])) {
-      const viewEntriesKeyboard = new InlineKeyboard()
-        .text("⏮️", "previous-entry").row()
-        .text("Exit", "view-entry-backbutton");
-
-      await viewEntryCtx.editMessageText("End of list", {
-        reply_markup: viewEntriesKeyboard,
-        parse_mode: "HTML",
-      });
-    } else if (currentEntry <= 0 && (!entries[currentEntry])) {
-      const viewEntriesKeyboard = new InlineKeyboard()
-        .text("⏭️", "next-entry").row()
-        .text("Exit", "view-entry-backbutton");
-
-      await viewEntryCtx.editMessageText("Beginning of list", {
-        reply_markup: viewEntriesKeyboard,
-        parse_mode: "HTML",
-      });
-    }
+    await viewEntryCtx.editMessageText(entryString, {
+      reply_markup: viewEntriesKeyboard,
+      parse_mode: "HTML",
+    });
   }
 }
