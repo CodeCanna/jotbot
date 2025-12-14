@@ -1,6 +1,6 @@
 import { Context, InlineKeyboard } from "grammy";
 import { Conversation } from "@grammyjs/conversations";
-import { Entry, Emotion } from "../types/types.ts";
+import { Emotion, Entry } from "../types/types.ts";
 import { insertEntry } from "../models/entry.ts";
 import { telegramDownloadUrl } from "../constants/strings.ts";
 
@@ -27,23 +27,23 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
   );
   const emotionDescriptionCtx = await conversation.waitFor("message:text");
 
-  // Build entry and emotion objects
+  // Store emoji and emotion name
+  const emotionNameAndEmoji = emojiAndEmotionName.message.text.split(" ");
+  let emotionEmoji: string, emotionName: string;
+  if (/\p{Emoji}/u.test(emotionNameAndEmoji[0])) {
+    emotionEmoji = emotionNameAndEmoji[0];
+    emotionName = emotionNameAndEmoji[1];
+  } else {
+    emotionEmoji = emotionNameAndEmoji[1];
+    emotionName = emotionNameAndEmoji[0];
+  }
+
+  // Build emotion object
   const emotion: Emotion = {
-    emotionName: "",
-    emotionEmoji: "",
+    emotionName: emotionName,
+    emotionEmoji: emotionEmoji,
     emotionDescription: emotionDescriptionCtx.message.text,
   };
-
-  const emotionNameAndEmoji = emojiAndEmotionName.message.text.split(" ");
-
-  const emojiRegex = /\p{Emoji}/u;
-  if (emojiRegex.test(emotionNameAndEmoji[0])) {
-    emotion.emotionEmoji = emotionNameAndEmoji[0];
-    emotion.emotionName = emotionNameAndEmoji[1];
-  } else {
-    emotion.emotionEmoji = emotionNameAndEmoji[1];
-    emotion.emotionName = emotionNameAndEmoji[0];
-  }
 
   ctx.reply("Would you like to take a selfie?", {
     reply_markup: new InlineKeyboard().text("✅ Yes", "selfie-yes").text(
@@ -64,15 +64,17 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
       const selfiePathCtx = await conversation.waitFor("message:photo");
 
       const tmpFile = await selfiePathCtx.getFile();
-      const selfieResponse = await fetch(
-        telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
-          "<file_path>",
-          tmpFile.file_path!,
-        ),
-      );
+      const selfieResponse = await conversation.external(async () => {
+        return await fetch(
+          telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
+            "<file_path>",
+            tmpFile.file_path!,
+          ),
+        );
+      });
 
       if (selfieResponse.body) {
-        await conversation.external(async () => {
+        await conversation.external(async () => { // User conversation.external
           const fileName = `${ctx.from?.id}_${
             new Date(Date.now()).toLocaleString()
           }.jpg`.replaceAll(" ", "_").replace(",", "").replaceAll("/", "-"); // Build and sanitize selfie file name
@@ -93,16 +95,16 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
     } catch (err) {
       console.log(`Jotbot Error: Failed to save selfie: ${err}`);
     }
-  } else if ((await selfieCtx).callbackQuery.data === "selfie-no") {
+  } else if (selfieCtx.callbackQuery.data === "selfie-no") {
     selfiePath = null;
   } else {
     console.log(
-      `Invalid Selection: ${(await selfieCtx).callbackQuery.data}`,
+      `Invalid Selection: ${selfieCtx.callbackQuery.data}`,
     );
   }
 
   const entry: Entry = {
-    timestamp: Date.now(),
+    timestamp: await conversation.external(() => Date.now()),
     userId: ctx.from?.id!,
     emotion: emotion,
     situation: situationCtx.message.text,
@@ -116,6 +118,7 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
     console.log(`Failed to insert Entry: ${err}`);
     return await ctx.reply(`Failed to insert entry: ${err}`);
   }
+
   return await ctx.reply(
     `Entry added at ${
       new Date(entry.timestamp).toLocaleString()
