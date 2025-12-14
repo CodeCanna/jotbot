@@ -48,6 +48,7 @@ If you are wanting to stop using Jotbot you can delete your account using /delet
 /help - Prints this help string in a message
 /new_entry - Start a new entry
 /view_entries - Scroll through your entries
+/kitties - Open the kitties app!  Studies show kitties can help with depression
 /delete_account - Delete your accound plus all entries
 /🆘 or /sos - Show the crisis help lines
 
