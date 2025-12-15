@@ -108,8 +108,6 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
       }
     }
 
-    console.log(currentEntry);
-
     entryString = `
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 
