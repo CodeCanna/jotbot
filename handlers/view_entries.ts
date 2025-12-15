@@ -5,7 +5,6 @@ import { Entry } from "../types/types.ts";
 import { viewEntriesKeyboard } from "../utils/keyboards.ts";
 
 export async function view_entries(conversation: Conversation, ctx: Context) {
-  ctx.
   let entries: Entry[] = await conversation.external(() =>
     getEntriesByUserId(ctx.from?.id!)
   );
