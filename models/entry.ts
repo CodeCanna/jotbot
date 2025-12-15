@@ -17,7 +17,7 @@ export function insertEntry(entry: Entry) {
     entry.emotion.emotionName,
     entry.emotion.emotionEmoji || null,
     entry.emotion.emotionDescription,
-    entry.selfiePath,
+    entry.selfiePath || null,
   );
   db.close();
 }
@@ -58,13 +58,19 @@ export function getEntriesByUserId(userId: number): Entry[] {
   return entries;
 }
 
-export function deleteEntry(entryId: number) {
+export function editEntry(entryId: number, entry: Entry) {}
+
+export function deleteEntryById(entryId: number) {
   try {
     const db = new DatabaseSync("db/jotbot.db");
     if (
-      !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
+      !(db.prepare("PRAGMA integrity_check(entry_db);").get()
+        ?.integrity_check === "ok")
     ) throw new Error("JotBot Error: Databaes integrety check failed!");
-    db.prepare(`DELETE FROM entry_db WHERE id = '${entryId}';`).run();
+    console.log(
+      db.prepare(`DELETE FROM entry_db WHERE id = '${entryId}';`).run(),
+    );
+    console.log(entryId);
     db.close();
   } catch (err) {
     console.log(`Failed to delete entry ${entryId} from entry_db: ${err}`);
