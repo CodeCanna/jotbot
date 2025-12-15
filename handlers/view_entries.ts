@@ -1,8 +1,9 @@
 import { Context, InlineKeyboard } from "grammy";
 import { Conversation } from "@grammyjs/conversations";
-import { deleteEntry, getEntriesByUserId } from "../models/entry.ts";
+import { deleteEntryById, getEntriesByUserId } from "../models/entry.ts";
 import { Entry } from "../types/types.ts";
 import { viewEntriesKeyboard } from "../utils/keyboards.ts";
+import { entryFromString } from "../utils/entryFromString.ts";
 
 export async function view_entries(conversation: Conversation, ctx: Context) {
   let entries: Entry[] = await conversation.external(() =>
@@ -45,8 +46,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
   while (true) {
     // If user deletes all entries through this menu
     if (entries.length === 0) {
-      ctx.editMessageText("No entries found.");
-      continue;
+      return await ctx.editMessageText("No entries found.");
     }
 
     const viewEntryCtx = await conversation.waitForCallbackQuery([
@@ -54,6 +54,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
       "delete-entry",
       "next-entry",
       "view-entry-backbutton",
+      "edit-entry"
     ]);
 
     switch (viewEntryCtx.callbackQuery.data) {
@@ -90,30 +91,39 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
               .text("⛔ No", "delete-entry-no"),
           },
         );
-        const deleteEntryConfirmCtx = await conversation.waitForCallbackQuery([
+        const deleteEntryByIdConfirmCtx = await conversation.waitForCallbackQuery([
           "delete-entry-yes",
           "delete-entry-no",
         ]);
 
-        if (deleteEntryConfirmCtx.callbackQuery.data === "delete-entry-yes") {
-          await conversation.external(() => {
+        if (deleteEntryByIdConfirmCtx.callbackQuery.data === "delete-entry-yes") {
+
             // Delete the current entry
-            deleteEntry(entries[currentEntry].id!);
+            await conversation.external(() => deleteEntryById(entries[currentEntry].id!));
             // Refresh entries array
-            entries = getEntriesByUserId(ctx.from?.id!);
-          });
+            entries = await conversation.external(() => getEntriesByUserId(ctx.from?.id!));
+
           break;
         } else if (
-          deleteEntryConfirmCtx.callbackQuery.data === "delete-entry-no"
+          deleteEntryByIdConfirmCtx.callbackQuery.data === "delete-entry-no"
         ) {
           break;
-        } else {
-          break;
         }
+        break;
       }
       case "view-entry-backbutton": {
         await viewEntryCtx.deleteMessage();
         break loop;
+      }
+      case "edit-entry": {
+        await viewEntryCtx.reply(`Copy the entry from above, edit it and send it back to me.`);
+        const editEntryCtx = await conversation.waitFor("message:text");
+
+        // console.log(`Entry to edit: ${editEntryCtx.message.text}`);
+        let entryToEdit = entryFromString(editEntryCtx.message.text);
+
+        entryToEdit.id = entries[currentEntry].id;
+        break;
       }
       default: {
         throw new Error(
