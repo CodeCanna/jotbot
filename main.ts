@@ -9,7 +9,7 @@ import { register } from "./handlers/register.ts";
 import { existsSync } from "node:fs";
 import { createEntryTable, createUserTable } from "./db/migration.ts";
 import { userExists } from "./models/user.ts";
-import { deleteEntry, getEntriesByUserId } from "./models/entry.ts";
+import { deleteEntryById, getEntriesByUserId } from "./models/entry.ts";
 import { InlineQueryResult } from "grammy/types";
 import {
   CommandGroup,
@@ -144,7 +144,7 @@ if (import.meta.main) {
         entryId = Number(ctx.message!.text.split(" ")[1]);
       }
 
-      deleteEntry(entryId);
+      deleteEntryById(entryId);
     },
   );
 
