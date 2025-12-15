@@ -40,7 +40,7 @@ export async function kitties(conversation: Conversation, ctx: Context) {
         await kittyMainSelectionCtx.deleteMessage();
         await kittyMainSelectionCtx.api.sendMessage(
           kittyMainSelectionCtx.chatId!,
-          "What would you like you kitty to say?",
+          "What would you like your kitty to say?",
         );
 
         const kittySaysCtx = await conversation.waitFor("message:text");
