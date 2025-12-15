@@ -5,9 +5,14 @@ import { Entry } from "../types/types.ts";
 import { viewEntriesKeyboard } from "../utils/keyboards.ts";
 
 export async function view_entries(conversation: Conversation, ctx: Context) {
+  ctx.
   let entries: Entry[] = await conversation.external(() =>
     getEntriesByUserId(ctx.from?.id!)
   );
+  if (entries.length === 0) {
+    conversation.halt();
+    return await ctx.reply("No entries found.");
+  }
   let currentEntry: number = 0;
 
   // Show first entry in list
@@ -39,6 +44,12 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
   });
   loop:
   while (true) {
+    // If user deletes all entries through this menu
+    if (entries.length === 0) {
+      ctx.editMessageText("No entries found.");
+      continue;
+    }
+
     const viewEntryCtx = await conversation.waitForCallbackQuery([
       "previous-entry",
       "delete-entry",
@@ -48,21 +59,25 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 
     switch (viewEntryCtx.callbackQuery.data) {
       case "next-entry": {
-        if (currentEntry >= entries.length - 1) {
-          currentEntry = 0;
-          break;
+        // Check if there are more than one entry in db
+        if (entries.length > 1) {
+          if (currentEntry >= entries.length - 1) {
+            currentEntry = 0;
+            break;
+          }
+          currentEntry++;
         }
-
-        currentEntry++;
         break;
       }
       case "previous-entry": {
-        if (currentEntry <= 0) {
-          currentEntry = entries.length - 1;
-          break;
+        // Check if there are more than one entry in db
+        if (entries.length > 1) {
+          if (currentEntry <= 0) {
+            currentEntry = entries.length - 1;
+            break;
+          }
+          currentEntry--;
         }
-
-        currentEntry--;
         break;
       }
       case "delete-entry": {
@@ -129,9 +144,13 @@ ${entries[currentEntry].automaticThoughts}
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 `;
 
-    await viewEntryCtx.editMessageText(entryString, {
-      reply_markup: viewEntriesKeyboard,
-      parse_mode: "HTML",
-    });
+    try {
+      await viewEntryCtx.editMessageText(entryString, {
+        reply_markup: viewEntriesKeyboard,
+        parse_mode: "HTML",
+      });
+    } catch (_err) { // Ignore error if message content doesn't change that just means there's only one entry in the db
+      continue;
+    }
   }
 }
