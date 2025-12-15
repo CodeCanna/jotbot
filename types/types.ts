@@ -8,6 +8,12 @@ export type Entry = {
   selfiePath: string | null;
 };
 
+export type EntryContent = {
+  emotion: Emotion,
+  situation: string,
+  automaticThoughts: string
+}
+
 export type Emotion = {
   emotionName: string;
   emotionEmoji?: string;
