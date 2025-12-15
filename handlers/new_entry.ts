@@ -64,16 +64,26 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
       const selfiePathCtx = await conversation.waitFor("message:photo");
 
       const tmpFile = await selfiePathCtx.getFile();
-      const selfieResponse = await conversation.external(async () => {
-        return await fetch(
-          telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
-            "<file_path>",
-            tmpFile.file_path!,
-          ),
-        );
-      });
+      console.log(tmpFile);
+      const selfieResponse = await fetch(
+        telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
+          "<file_path>",
+          tmpFile.file_path!,
+        ),
+      );
+
+      // const selfieResponse = await conversation.external(async () =>
+      //   await fetch(
+      //     telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
+      //       "<file_path>",
+      //       tmpFile.file_path!,
+      //     ),
+      //   )
+      // );
 
       if (selfieResponse.body) {
+        console.log("tits");
+
         await conversation.external(async () => { // User conversation.external
           const fileName = `${ctx.from?.id}_${
             new Date(Date.now()).toLocaleString()
