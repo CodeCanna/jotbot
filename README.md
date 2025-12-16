@@ -20,7 +20,7 @@ If you are wanting to stop using Jotbot you can delete your account using /delet
 
 **/new_entry** - Start a new entry
 
-**/view_entries** - Scroll through your entries
+**/view_entries** - Scroll through your entries (You can also delete and edit entries from here)
 
 **/kitties** - Open the kitties app!  Studies show kitties can help with depression!
 
@@ -29,3 +29,15 @@ If you are wanting to stop using Jotbot you can delete your account using /delet
 **/🆘** or **/sos** - Show the crisis help lines
 
 **NOTE**: The selfie features aren't working right now.
+
+## Starting a new entry
+
+To start a new entry run the `/new_entry` command, and simply answer the follow up questions from the bot.
+
+## Viewing, Editing, and deleting entries
+
+To view, edit, or delete entries use the `/view_entries` command.  This will brind up a menu that allows you to scroll through the enries.  When you scroll to an entry you want to delete or edit, press the **💣Delete💣** button to delete the currently selected entry, or the **✏️Edit Entry✏️** button to edit your entry.
+
+When editing an entry you will be asked to copy the contents of the entry you have selected and paste it into the chat with the bot.  You can then edit the entry before sending the updated entry back to the bot to save.  Be careful not to edit the entry fields like **Situation** or **Automatic Thoughts** because the bot uses these the read the data.  Only edit the parts of the entry that you actually typed out.
+
+When deleting an entry you will be asked if you are sure you want to delete the entry press yes to delete or no to return to viewing entries.
