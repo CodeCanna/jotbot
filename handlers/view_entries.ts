@@ -16,7 +16,7 @@ export async function view_entries(conversation: Conversation, ctx: Context) {
 
   // If there are no stored entries inform user and stop conversation
   if (entries.length === 0) {
-    return await ctx.reply("No entries to view.");
+    return await ctx.api.sendMessage(ctx.chatId!, "No entries to view.");
   }
 
   let currentEntry: number = 0;
@@ -43,7 +43,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 `;
 
   // Reply initially with first entry before starting loop
-  await ctx.reply(entryString, {
+  await ctx.api.sendMessage(ctx.chatId!, entryString, {
     reply_markup: viewEntriesKeyboard,
     parse_mode: "HTML",
   });
@@ -97,14 +97,14 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
               .text("⛔ No", "delete-entry-no"),
           },
         );
-        const deleteEntryByIdConfirmCtx = await conversation
+        const deleteConfirmCtx = await conversation
           .waitForCallbackQuery([
             "delete-entry-yes",
             "delete-entry-no",
           ]);
 
         if (
-          deleteEntryByIdConfirmCtx.callbackQuery.data === "delete-entry-yes"
+          deleteConfirmCtx.callbackQuery.data === "delete-entry-yes"
         ) {
           // Delete the current entry
           await conversation.external(() =>
@@ -121,7 +121,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
           }
           break;
         } else if (
-          deleteEntryByIdConfirmCtx.callbackQuery.data === "delete-entry-no"
+          deleteConfirmCtx.callbackQuery.data === "delete-entry-no"
         ) {
           break;
         }
@@ -132,7 +132,8 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
         break loop;
       }
       case "edit-entry": {
-        await viewEntryCtx.reply(
+        await viewEntryCtx.api.sendMessage(
+          ctx.chatId!,
           `Copy the entry from above, edit it and send it back to me.`,
         );
         const editEntryCtx = await conversation.waitFor("message:text");
@@ -155,6 +156,8 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
           console.log(err);
         }
 
+        await editEntryCtx.api.deleteMessage(ctx.chatId!, editEntryCtx.msgId);
+
         try {
           await conversation.external(() =>
             updateEntry(entryToEdit.id!, entryToEdit)
@@ -169,6 +172,10 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
         entries = await conversation.external(() =>
           getEntriesByUserId(ctx.from?.id!)
         );
+
+        // await viewEntryCtx.api.sendMessage(ctx.chatId!, "Entry Updated!");
+        await ctx.api.editMessageText(ctx.chatId!, viewEntryCtx.msgId! + 1, "Message Updated!");
+        await new Promise(() => setTimeout(async () => await ctx.api.deleteMessage(ctx.chatId!, viewEntryCtx.msgId! + 1), 5000));
         break;
       }
       default: {
