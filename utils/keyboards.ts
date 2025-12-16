@@ -13,7 +13,7 @@ export const viewEntriesKeyboard: InlineKeyboard = new InlineKeyboard()
   .text("⏮️", "previous-entry")
   .text("💣 Delete 💣", "delete-entry")
   .text("⏭️", "next-entry").row()
-  .text("Edit Entry", "edit-entry").row()
+  .text("✏️Edit Entry✏️", "edit-entry").row()
   .text("Exit", "view-entry-backbutton");
 
 export const mainCustomKeyboard: Keyboard = new Keyboard()
