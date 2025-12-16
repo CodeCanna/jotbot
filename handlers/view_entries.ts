@@ -1,6 +1,10 @@
 import { Context, InlineKeyboard } from "grammy";
 import { Conversation } from "@grammyjs/conversations";
-import { deleteEntryById, getEntriesByUserId } from "../models/entry.ts";
+import {
+  deleteEntryById,
+  getEntriesByUserId,
+  updateEntry,
+} from "../models/entry.ts";
 import { Entry } from "../types/types.ts";
 import { viewEntriesKeyboard } from "../utils/keyboards.ts";
 import { entryFromString } from "../utils/entryFromString.ts";
@@ -9,12 +13,13 @@ export async function view_entries(conversation: Conversation, ctx: Context) {
   let entries: Entry[] = await conversation.external(() =>
     getEntriesByUserId(ctx.from?.id!)
   );
+
   if (entries.length === 0) {
-    conversation.halt();
+    await conversation.halt();
     return await ctx.reply("No entries found.");
   }
-  let currentEntry: number = 0;
 
+  let currentEntry: number = 0;
   // Show first entry in list
   let entryString = `
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
@@ -42,6 +47,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
     reply_markup: viewEntriesKeyboard,
     parse_mode: "HTML",
   });
+
   loop:
   while (true) {
     // If user deletes all entries through this menu
@@ -54,7 +60,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
       "delete-entry",
       "next-entry",
       "view-entry-backbutton",
-      "edit-entry"
+      "edit-entry",
     ]);
 
     switch (viewEntryCtx.callbackQuery.data) {
@@ -91,17 +97,23 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
               .text("⛔ No", "delete-entry-no"),
           },
         );
-        const deleteEntryByIdConfirmCtx = await conversation.waitForCallbackQuery([
-          "delete-entry-yes",
-          "delete-entry-no",
-        ]);
+        const deleteEntryByIdConfirmCtx = await conversation
+          .waitForCallbackQuery([
+            "delete-entry-yes",
+            "delete-entry-no",
+          ]);
 
-        if (deleteEntryByIdConfirmCtx.callbackQuery.data === "delete-entry-yes") {
-
-            // Delete the current entry
-            await conversation.external(() => deleteEntryById(entries[currentEntry].id!));
-            // Refresh entries array
-            entries = await conversation.external(() => getEntriesByUserId(ctx.from?.id!));
+        if (
+          deleteEntryByIdConfirmCtx.callbackQuery.data === "delete-entry-yes"
+        ) {
+          // Delete the current entry
+          await conversation.external(() =>
+            deleteEntryById(entries[currentEntry].id!)
+          );
+          // Refresh entries array
+          entries = await conversation.external(() =>
+            getEntriesByUserId(ctx.from?.id!)
+          );
 
           break;
         } else if (
@@ -116,13 +128,43 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
         break loop;
       }
       case "edit-entry": {
-        await viewEntryCtx.reply(`Copy the entry from above, edit it and send it back to me.`);
+        await viewEntryCtx.reply(
+          `Copy the entry from above, edit it and send it back to me.`,
+        );
         const editEntryCtx = await conversation.waitFor("message:text");
 
         // console.log(`Entry to edit: ${editEntryCtx.message.text}`);
-        let entryToEdit = entryFromString(editEntryCtx.message.text);
+        let entryToEdit: Entry;
+        try {
+          entryToEdit = entryFromString(editEntryCtx.message.text);
 
-        entryToEdit.id = entries[currentEntry].id;
+          entryToEdit.id = entries[currentEntry].id;
+          entryToEdit.lastEditedTimestamp = await conversation.external(() =>
+            Date.now()
+          );
+
+          console.log(entryToEdit);
+        } catch (err) {
+          await editEntryCtx.reply(
+            `There was an error reading your edited entry.  Make sure you are only editing the parts that YOU typed!`,
+          );
+          console.log(err);
+        }
+
+        try {
+          await conversation.external(() =>
+            updateEntry(entryToEdit.id!, entryToEdit)
+          );
+        } catch (err) {
+          await editEntryCtx.reply(
+            `I'm sorry I ran into an error while trying to save your changes.`,
+          );
+          console.log(err);
+        }
+        // Refresh entries
+        entries = await conversation.external(() =>
+          getEntriesByUserId(ctx.from?.id!)
+        );
         break;
       }
       default: {
