@@ -14,9 +14,9 @@ export async function view_entries(conversation: Conversation, ctx: Context) {
     getEntriesByUserId(ctx.from?.id!)
   );
 
+  // If there are no stored entries inform user and stop conversation
   if (entries.length === 0) {
-    await conversation.halt();
-    return await ctx.reply("No entries found.");
+    return await ctx.reply("No entries to view.");
   }
 
   let currentEntry: number = 0;
@@ -27,7 +27,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 <b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
 <b><u>Emotion</u></b>
 ${entries[currentEntry].emotion.emotionName} ${
-    entries[currentEntry].emotion.emotionEmoji
+    entries[currentEntry].emotion.emotionEmoji || ""
   }
 
 <b><u>Emotion Description</u></b>
@@ -115,6 +115,10 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
             getEntriesByUserId(ctx.from?.id!)
           );
 
+          if (entries.length === 0) {
+            viewEntryCtx.editMessageText("No entries to view.");
+            break loop;
+          }
           break;
         } else if (
           deleteEntryByIdConfirmCtx.callbackQuery.data === "delete-entry-no"
@@ -180,7 +184,7 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 <b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
 <b><u>Emotion</u></b>
 ${entries[currentEntry].emotion.emotionName} ${
-      entries[currentEntry].emotion.emotionEmoji
+      entries[currentEntry].emotion.emotionEmoji || ""
     }
 
 <b><u>Emotion Description</u></b>
