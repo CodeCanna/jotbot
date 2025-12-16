@@ -10,9 +10,9 @@ export const deleteAccountConfirmKeyboard: InlineKeyboard = new InlineKeyboard()
   .text("No", "delete-account-no");
 
 export const viewEntriesKeyboard: InlineKeyboard = new InlineKeyboard()
-  .text("⏮️", "previous-entry")
+  .text("⬅️", "previous-entry")
   .text("💣 Delete 💣", "delete-entry")
-  .text("⏭️", "next-entry").row()
+  .text("➡️", "next-entry").row()
   .text("✏️Edit Entry✏️", "edit-entry").row()
   .text("Exit", "view-entry-backbutton");
 
