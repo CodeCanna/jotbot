@@ -20,11 +20,19 @@ export async function view_entries(conversation: Conversation, ctx: Context) {
   }
 
   let currentEntry: number = 0;
+  let lastEditedTimestampString = `<b>Last Edited</b> ${
+    entries[currentEntry].lastEditedTimestamp
+      ? new Date(entries[currentEntry].lastEditedTimestamp!).toLocaleString()
+      : ""
+  }`;
   // Show first entry in list
   let entryString = `
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 
-<b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
+<b>Date Created</b> ${
+    new Date(entries[currentEntry].timestamp).toLocaleString()
+  }
+${entries[currentEntry].lastEditedTimestamp ? lastEditedTimestampString : ""}
 <b><u>Emotion</u></b>
 ${entries[currentEntry].emotion.emotionName} ${
     entries[currentEntry].emotion.emotionEmoji || ""
@@ -174,8 +182,18 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
         );
 
         // await viewEntryCtx.api.sendMessage(ctx.chatId!, "Entry Updated!");
-        await ctx.api.editMessageText(ctx.chatId!, viewEntryCtx.msgId! + 1, "Message Updated!");
-        await new Promise(() => setTimeout(async () => await ctx.api.deleteMessage(ctx.chatId!, viewEntryCtx.msgId! + 1), 5000));
+        await ctx.api.editMessageText(
+          ctx.chatId!,
+          viewEntryCtx.msgId! + 1,
+          "Message Updated!",
+        );
+        await new Promise(() =>
+          setTimeout(
+            async () =>
+              await ctx.api.deleteMessage(ctx.chatId!, viewEntryCtx.msgId! + 1),
+            3000,
+          )
+        );
         break;
       }
       default: {
@@ -185,10 +203,16 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
       }
     }
 
+    lastEditedTimestampString = `<b>Last Edited</b> ${
+      entries[currentEntry].lastEditedTimestamp
+        ? new Date(entries[currentEntry].lastEditedTimestamp!).toLocaleString()
+        : ""
+    }`;
     entryString = `
 Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
 
 <b>Date</b> ${new Date(entries[currentEntry].timestamp).toLocaleString()}
+${entries[currentEntry].lastEditedTimestamp ? lastEditedTimestampString : ""}
 <b><u>Emotion</u></b>
 ${entries[currentEntry].emotion.emotionName} ${
       entries[currentEntry].emotion.emotionEmoji || ""
