@@ -23,43 +23,6 @@ export function insertEntry(entry: Entry) {
   db.close();
 }
 
-export function getEntriesByUserId(userId: number): Entry[] {
-  const entries = [];
-  try {
-    const db = new DatabaseSync("db/jotbot.db");
-    if (
-      !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
-    const queryResults = db.prepare(
-      `SELECT * FROM entry_db WHERE userId = '${userId}' ORDER BY timestamp DESC;`,
-    ).all();
-    for (const e in queryResults) {
-      const entry: Entry = {
-        id: Number(queryResults[e].id!),
-        userId: Number(queryResults[e].userId!),
-        timestamp: Number(queryResults[e].timestamp!),
-        lastEditedTimestamp: Number(queryResults[e].lastEditedTimestamp!),
-        situation: queryResults[e].situation?.toString()!,
-        automaticThoughts: queryResults[e].automaticThoughts?.toString()!,
-        emotion: {
-          emotionName: queryResults[e].emotionName?.toString()!,
-          emotionEmoji: queryResults[e].emotionEmoji?.toString()!,
-          emotionDescription: queryResults[e].emotionDescription?.toString()!,
-        },
-        selfiePath: queryResults[e].selfiePath?.toString()!,
-      };
-
-      entries.push(entry);
-    }
-    db.close();
-  } catch (err) {
-    console.log(
-      `Jotbot Error: Failed retrieving all entries for user ${userId}: ${err}`,
-    );
-  }
-  return entries;
-}
-
 export function updateEntry(entryId: number, entry: Entry) {
   try {
     const db = new DatabaseSync("db/jotbot.db");
@@ -67,6 +30,7 @@ export function updateEntry(entryId: number, entry: Entry) {
       !(db.prepare("PRAGMA integrity_check(entry_db);").get()
         ?.integrity_check === "ok")
     ) throw new Error("JotBot Error: Databaes integrety check failed!");
+    db.exec("PRAGMA foreign_keys = ON;");
     const queryResult = db.prepare(
       `UPDATE OR FAIL entry_db SET lastEditedTimestamp = ?, situation = ?, automaticThoughts = ?, emotionName = ?, emotionEmoji = ?, emotionDescription = ? WHERE id = ${entry.id};`,
     ).run(
@@ -104,4 +68,41 @@ export function deleteEntryById(entryId: number) {
   } catch (err) {
     console.log(`Failed to delete entry ${entryId} from entry_db: ${err}`);
   }
+}
+
+export function getEntriesByUserId(userId: number): Entry[] {
+  const entries = [];
+  try {
+    const db = new DatabaseSync("db/jotbot.db");
+    if (
+      !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
+    ) throw new Error("JotBot Error: Databaes integrety check failed!");
+    const queryResults = db.prepare(
+      `SELECT * FROM entry_db WHERE userId = '${userId}' ORDER BY timestamp DESC;`,
+    ).all();
+    for (const e in queryResults) {
+      const entry: Entry = {
+        id: Number(queryResults[e].id!),
+        userId: Number(queryResults[e].userId!),
+        timestamp: Number(queryResults[e].timestamp!),
+        lastEditedTimestamp: Number(queryResults[e].lastEditedTimestamp!),
+        situation: queryResults[e].situation?.toString()!,
+        automaticThoughts: queryResults[e].automaticThoughts?.toString()!,
+        emotion: {
+          emotionName: queryResults[e].emotionName?.toString()!,
+          emotionEmoji: queryResults[e].emotionEmoji?.toString()!,
+          emotionDescription: queryResults[e].emotionDescription?.toString()!,
+        },
+        selfiePath: queryResults[e].selfiePath?.toString()!,
+      };
+
+      entries.push(entry);
+    }
+    db.close();
+  } catch (err) {
+    console.log(
+      `Jotbot Error: Failed retrieving all entries for user ${userId}: ${err}`,
+    );
+  }
+  return entries;
 }
