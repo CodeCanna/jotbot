@@ -1,4 +1,5 @@
 import { Entry } from "../types/types.ts";
+import { getAllEntriesByUserId } from "../models/entry.ts";
 
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,3 +41,34 @@ export function entryFromString(entryString: string): Entry {
     throw new Error(`Failed to build entry from string: ${err}`);
   }
 }
+
+export async function dropOrphanedSelfies() {
+  const entries = getAllEntriesByUserId(779473861);
+  const selfiePaths: string[] = [];
+  for (const entry in entries) {
+    if (!entries[entry].selfiePath) continue;
+    selfiePaths.push(entries[entry].selfiePath!);
+  }
+
+  const dateTimes: string[][] = [];
+  for (const path in selfiePaths) {
+    const date = selfiePaths[path].split("_")[1];
+    const time = selfiePaths[path].split("_")[2];
+    const dateTime = [];
+    dateTime.push(date, time);
+    dateTimes.push(dateTime);
+  }
+
+  const dateTimeStrings = [];
+  for (const dateTime in dateTimes) {
+    dateTimeStrings.push(new RegExp(dateTimes[dateTime].join("_")));
+  }
+
+  for await (const dirEntry of Deno.readDir("assets/selfies")) {
+    for (const regex in dateTimeStrings) {
+      if (!dateTimeStrings[regex].(dirEntry.name)) Deno.remove(`assets/selfies/${dirEntry.name}`);
+    }
+  }
+}
+
+dropOrphanedSelfies();
