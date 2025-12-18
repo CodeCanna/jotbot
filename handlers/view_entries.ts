@@ -102,9 +102,12 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
       }
       case "delete-entry": {
         await viewEntryCtx.editMessageMedia(
-          InputMediaBuilder.photo(new InputFile(entries[currentEntry].selfiePath!), {
-            caption: "Are you sure you want to delete this entry?",
-          }),
+          InputMediaBuilder.photo(
+            new InputFile(entries[currentEntry].selfiePath! || "assets/404.png"),
+            {
+              caption: "Are you sure you want to delete this entry?",
+            },
+          ),
           {
             reply_markup: new InlineKeyboard().text(
               "✅ Yes",
@@ -122,21 +125,18 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
         if (
           deleteConfirmCtx.callbackQuery.data === "delete-entry-yes"
         ) {
+          // Delete selfie file associated with entry
+          if (entries[currentEntry].selfiePath) {
+            await conversation.external(async () => {
+              await Deno.remove(entries[currentEntry].selfiePath!);
+            });
+          }
+
           // Delete the current entry
           await conversation.external(() =>
             deleteEntryById(entries[currentEntry].id!)
           );
 
-          // Delete selfie file associated with entry
-          await conversation.external(async () => {
-            try {
-              await Deno.remove(entries[currentEntry].selfiePath!);
-            } catch (err) {
-              if (!(err instanceof Deno.errors.NotFound)) {
-                throw err;
-              }
-            }
-          });
           // Refresh entries array
           entries = await conversation.external(() =>
             getAllEntriesByUserId(ctx.from?.id!)
@@ -220,6 +220,8 @@ Page <b>${currentEntry + 1}</b> of <b>${entries.length}</b>
         );
       }
     }
+
+    console.log(entries[currentEntry]);
 
     lastEditedTimestampString = `<b>Last Edited</b> ${
       entries[currentEntry].lastEditedTimestamp
