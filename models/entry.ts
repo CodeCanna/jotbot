@@ -7,7 +7,7 @@ export function insertEntry(entry: Entry) {
     !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
   ) throw new Error("JotBot Error: Databaes integrety check failed!");
   db.exec("PRAGMA foreign_keys = ON;");
-  db.prepare(
+  const queryResult = db.prepare(
     `INSERT INTO entry_db (userId, timestamp, lastEditedTimestamp, situation, automaticThoughts, emotionName, emotionEmoji, emotionDescription, selfiePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
   ).run(
     entry.userId,
@@ -20,6 +20,12 @@ export function insertEntry(entry: Entry) {
     entry.emotion.emotionDescription,
     entry.selfiePath || null,
   );
+
+  if (queryResult.changes === 0) {
+    throw new Error(
+      `Query ran but no changes were made.`,
+    );
+  }
   db.close();
 }
 
@@ -43,7 +49,9 @@ export function updateEntry(entryId: number, entry: Entry) {
     );
 
     if (queryResult.changes === 0) {
-      throw new Error(`There was a problem updating entry ${entry.id}.`);
+      throw new Error(
+        `Query ran but no changes were made.`,
+      );
     }
 
     db.close();
@@ -60,10 +68,16 @@ export function deleteEntryById(entryId: number) {
       !(db.prepare("PRAGMA integrity_check(entry_db);").get()
         ?.integrity_check === "ok")
     ) throw new Error("JotBot Error: Databaes integrety check failed!");
-    console.log(
-      db.prepare(`DELETE FROM entry_db WHERE id = '${entryId}';`).run(),
-    );
-    console.log(entryId);
+
+    const queryResult = db.prepare(
+      `DELETE FROM entry_db WHERE id = '${entryId}';`,
+    ).run();
+
+    if (queryResult.changes === 0) {
+      throw new Error(
+        `Query ran but no changes were made.`,
+      );
+    }
     db.close();
   } catch (err) {
     console.log(`Failed to delete entry ${entryId} from entry_db: ${err}`);
