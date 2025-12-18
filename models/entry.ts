@@ -78,13 +78,14 @@ export function deleteEntryById(entryId: number) {
         `Query ran but no changes were made.`,
       );
     }
+    
     db.close();
   } catch (err) {
     console.log(`Failed to delete entry ${entryId} from entry_db: ${err}`);
   }
 }
 
-export function getEntriesByUserId(userId: number): Entry[] {
+export function getAllEntriesByUserId(userId: number): Entry[] {
   const entries = [];
   try {
     const db = new DatabaseSync("db/jotbot.db");
