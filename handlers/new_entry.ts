@@ -6,7 +6,7 @@ import { telegramDownloadUrl } from "../constants/strings.ts";
 
 export async function new_entry(conversation: Conversation, ctx: Context) {
   // Describe situation
-  await ctx.reply("Describe the situation that brought up your thought.");
+  await ctx.api.sendMessage(ctx.chatId!, "Describe the situation that brought up your thought.");
   const situationCtx = await conversation.waitFor("message:text");
 
   // Record automatic thoughts
@@ -64,7 +64,6 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
       const selfiePathCtx = await conversation.waitFor("message:photo");
 
       const tmpFile = await selfiePathCtx.getFile();
-      console.log(tmpFile);
       const selfieResponse = await fetch(
         telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
           "<file_path>",
@@ -72,18 +71,7 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
         ),
       );
 
-      // const selfieResponse = await conversation.external(async () =>
-      //   await fetch(
-      //     telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
-      //       "<file_path>",
-      //       tmpFile.file_path!,
-      //     ),
-      //   )
-      // );
-
       if (selfieResponse.body) {
-        console.log("tits");
-
         await conversation.external(async () => { // User conversation.external
           const fileName = `${ctx.from?.id}_${
             new Date(Date.now()).toLocaleString()
@@ -100,7 +88,7 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
           await selfieResponse.body!.pipeTo(file.writable);
         });
 
-        await ctx.reply(`Selfie saved successfully!`);
+        await selfiePathCtx.reply(`Selfie saved successfully!`);
       }
     } catch (err) {
       console.log(`Jotbot Error: Failed to save selfie: ${err}`);
