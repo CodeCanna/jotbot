@@ -9,7 +9,7 @@ import { register } from "./handlers/register.ts";
 import { existsSync } from "node:fs";
 import { createEntryTable, createUserTable } from "./db/migration.ts";
 import { userExists } from "./models/user.ts";
-import { deleteEntryById, getEntriesByUserId } from "./models/entry.ts";
+import { deleteEntryById, getAllEntriesByUserId } from "./models/entry.ts";
 import { InlineQueryResult } from "grammy/types";
 import {
   CommandGroup,
@@ -159,7 +159,7 @@ if (import.meta.main) {
   );
 
   jotBot.on("inline_query", async (ctx) => {
-    const entries = getEntriesByUserId(ctx.inlineQuery.from.id);
+    const entries = getAllEntriesByUserId(ctx.inlineQuery.from.id);
     const entriesInlineQueryResults: InlineQueryResult[] = [];
     for (const entry in entries) {
       const entryDate = new Date(entries[entry].timestamp);
