@@ -70,3 +70,25 @@ export async function dropOrphanedSelfies() {
     }
   }
 }
+
+export function entryToString(entry: Entry): string {
+  return `
+<b>Date Created</b> ${
+    new Date(entry.timestamp).toLocaleString()
+  }
+${entry.lastEditedTimestamp ? new Date(entry.lastEditedTimestamp).toLocaleString() : ""}
+<b><u>Emotion</u></b>
+${entry.emotion.emotionName} ${
+    entry.emotion.emotionEmoji || ""
+  }
+  // Show first entry in list
+<b><u>Emotion Description</u></b>
+${entry.emotion.emotionDescription}
+
+<b><u>Situation</u></b>
+${entry.situation}
+
+<b><u>Automatic Thoughts</u></b>
+${entry.automaticThoughts}
+`;
+}
