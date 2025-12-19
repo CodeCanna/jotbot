@@ -22,7 +22,7 @@ export function createEntryTable() {
     `).run();
     db.close();
   } catch (err) {
-    console.log(`Failed to create entry_db table: ${err}`);
+    console.error(`Failed to create entry_db table: ${err}`);
   }
 }
 
@@ -41,6 +41,6 @@ export function createUserTable() {
         `).run();
         db.close();
     } catch (err) {
-        console.log(`There was a a problem create the user_db table: ${err}`);
+        console.error(`There was a a problem create the user_db table: ${err}`);
     }
 }

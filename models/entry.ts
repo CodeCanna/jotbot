@@ -56,6 +56,7 @@ export function updateEntry(entryId: number, entry: Entry) {
 
     db.close();
   } catch (err) {
+    console.error(`Failed to update entry ${entryId}: ${err}`);
     throw new Error(`Failed to update entry ${entryId} in entry_db: ${err}`);
   }
   console.log(`Entry ${entry.id} updated!`);
@@ -68,7 +69,7 @@ export function deleteEntryById(entryId: number) {
       !(db.prepare("PRAGMA integrity_check(entry_db);").get()
         ?.integrity_check === "ok")
     ) throw new Error("JotBot Error: Databaes integrety check failed!");
-
+    db.exec("PRAGMA foreign_keys = ON;");
     const queryResult = db.prepare(
       `DELETE FROM entry_db WHERE id = '${entryId}';`,
     ).run();
@@ -81,7 +82,7 @@ export function deleteEntryById(entryId: number) {
 
     db.close();
   } catch (err) {
-    console.log(`Failed to delete entry ${entryId} from entry_db: ${err}`);
+    console.error(`Failed to delete entry ${entryId} from entry_db: ${err}`);
   }
 }
 
@@ -98,7 +99,7 @@ export function getEntryById(entryId: number): Entry {
       .get();
     db.close();
   } catch (err) {
-    console.log(err);
+    console.error(`Failed to retrieve entry: ${entryId}: ${err}`);
   }
 
   return {
@@ -147,7 +148,7 @@ export function getAllEntriesByUserId(userId: number): Entry[] {
     }
     db.close();
   } catch (err) {
-    console.log(
+    console.error(
       `Jotbot Error: Failed retrieving all entries for user ${userId}: ${err}`,
     );
   }
