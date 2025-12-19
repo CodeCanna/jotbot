@@ -1,4 +1,4 @@
-import { DatabaseSync } from "node:sqlite";
+import { DatabaseSync, SQLOutputValue } from "node:sqlite";
 import { Entry } from "../types/types.ts";
 
 export function insertEntry(entry: Entry) {
@@ -78,11 +78,44 @@ export function deleteEntryById(entryId: number) {
         `Query ran but no changes were made.`,
       );
     }
-    
+
     db.close();
   } catch (err) {
     console.log(`Failed to delete entry ${entryId} from entry_db: ${err}`);
   }
+}
+
+export function getEntryById(entryId: number): Entry {
+  let queryResult: Record<string, SQLOutputValue> | undefined;
+  try {
+    const db = new DatabaseSync("db/jotbot.db");
+    if (
+      !(db.prepare("PRAGMA integrity_check(entry_db);").get()
+        ?.integrity_check === "ok")
+    ) throw new Error("JotBot Error: Databaes integrety check failed!");
+    db.exec("PRAGMA foreign_keys = ON;");
+    queryResult = db.prepare(`SELECT * FROM entry_db WHERE id = ${entryId}`)
+      .get();
+    console.log(queryResult);
+    db.close();
+  } catch (err) {
+    console.log(err);
+  }
+
+  return {
+    id: Number(queryResult?.id!),
+    userId: Number(queryResult?.userId!),
+    timestamp: Number(queryResult?.timestamp!),
+    lastEditedTimestamp: Number(queryResult?.lastEditedTimestamp!),
+    situation: String(queryResult?.situation!),
+    automaticThoughts: String(queryResult?.automaticThoughts!),
+    emotion: {
+      emotionName: String(queryResult?.emotionName!),
+      emotionEmoji: String(queryResult?.emotionEmoji!),
+      emotionDescription: String(queryResult?.emotionDescription!),
+    },
+    selfiePath: String(queryResult?.selfiePath!),
+  };
 }
 
 export function getAllEntriesByUserId(userId: number): Entry[] {
