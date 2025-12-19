@@ -96,7 +96,6 @@ export function getEntryById(entryId: number): Entry {
     db.exec("PRAGMA foreign_keys = ON;");
     queryResult = db.prepare(`SELECT * FROM entry_db WHERE id = ${entryId}`)
       .get();
-    console.log(queryResult);
     db.close();
   } catch (err) {
     console.log(err);
