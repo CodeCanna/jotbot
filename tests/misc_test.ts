@@ -22,7 +22,6 @@ Test Entry
 Page 1 of 15`;
   const testEntry: Entry = {
     userId: 0,
-    timestamp: 1765927954000,
     emotion: {
       emotionName: "Test",
       emotionEmoji: "😌",
@@ -32,6 +31,8 @@ Page 1 of 15`;
     automaticThoughts: "Test Entry",
     selfiePath: null,
   };
+
+  // entryFromString(testEntryString);
 
   assertEquals(entryFromString(testEntryString), testEntry);
 });
