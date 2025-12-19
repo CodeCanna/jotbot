@@ -1,4 +1,8 @@
-import { Bot, Context, InlineQueryResultBuilder } from "grammy";
+import {
+  Bot,
+  Context,
+  InlineQueryResultBuilder,
+} from "grammy";
 import {
   type ConversationFlavor,
   conversations,
@@ -9,7 +13,10 @@ import { register } from "./handlers/register.ts";
 import { existsSync } from "node:fs";
 import { createEntryTable, createUserTable } from "./db/migration.ts";
 import { userExists } from "./models/user.ts";
-import { deleteEntryById, getAllEntriesByUserId } from "./models/entry.ts";
+import {
+  deleteEntryById,
+  getAllEntriesByUserId,
+} from "./models/entry.ts";
 import { InlineQueryResult } from "grammy/types";
 import {
   CommandGroup,
@@ -159,6 +166,7 @@ if (import.meta.main) {
   );
 
   jotBot.on("inline_query", async (ctx) => {
+    console.log((await jotBot.api.getUpdates()));
     const entries = getAllEntriesByUserId(ctx.inlineQuery.from.id);
     const entriesInlineQueryResults: InlineQueryResult[] = [];
     for (const entry in entries) {
@@ -191,6 +199,17 @@ ${entries[entry].automaticThoughts}
       is_personal: true,
     });
   });
+
+  // jotBot.on("chosen_inline_result", (ctx) => {
+  //   console.log(`Inline Result Chosen: ${ctx.chosenInlineResult.result_id}`);
+  //   const entry = getEntryById(Number(ctx.chosenInlineResult.result_id));
+
+  //   // Send the entry
+  //   jotBot.api.sendPhoto(ctx.in, new InputFile(entry.selfiePath!));
+  //   jotBot.api.sendMessage(ctx.chatId!, entryToString(entry), {
+  //     parse_mode: "HTML",
+  //   });
+  // });
 
   jotBot.callbackQuery("register-new-user", async (ctx) => {
     await ctx.conversation.enter("register");
