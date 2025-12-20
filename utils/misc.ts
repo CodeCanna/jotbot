@@ -1,5 +1,15 @@
-import { Entry } from "../types/types.ts";
+import {
+  AnxietySeverity,
+  DepressionSeverity,
+  Entry,
+  GAD7Score,
+  PHQ9Score,
+} from "../types/types.ts";
 import { getAllEntriesByUserId } from "../models/entry.ts";
+import {
+  anxietyExplanations,
+  depressionExplanations,
+} from "../constants/strings.ts";
 
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -93,4 +103,75 @@ ${entry.situation}
 <b><u>Automatic Thoughts</u></b>
 ${entry.automaticThoughts}
 `;
+}
+
+export function calcPhq9Score(
+  score: number,
+  impactQuestionAnswer: string,
+): PHQ9Score {
+  let depressionSeverity: DepressionSeverity;
+  let depressionExplanation: string;
+
+  if (score <= 4) {
+    depressionSeverity = DepressionSeverity.NONE_MINIMAL;
+    depressionExplanation = depressionExplanations.none_minimal;
+  } else if (score <= 9) {
+    depressionSeverity = DepressionSeverity.MILD;
+    depressionExplanation = depressionExplanations.mild;
+  } else if (score <= 14) {
+    depressionSeverity = DepressionSeverity.MODERATE;
+    depressionExplanation = depressionExplanations.moderate;
+  } else if (score <= 19) {
+    depressionSeverity = DepressionSeverity.MODERATELY_SEVERE;
+    depressionExplanation = depressionExplanations.moderately_severe;
+  } else if (score <= 27) {
+    depressionSeverity = DepressionSeverity.SEVERE;
+    depressionExplanation = depressionExplanations.severe;
+  } else {
+    console.log("Depression Score out of bounds!");
+  }
+
+  return {
+    id: 0,
+    userId: 0,
+    score: score,
+    severity: depressionSeverity!,
+    action: depressionExplanation!,
+    impactQuestionAnswer: impactQuestionAnswer,
+    timestamp: new Date(Date.now()),
+  };
+}
+
+export function calcGad7Score(
+  score: number,
+  impactQestionAnswer: string,
+): GAD7Score {
+  let anxietySeverity: AnxietySeverity;
+  let anxietyExplanation: string;
+
+  if (score <= 4) {
+    anxietySeverity = AnxietySeverity.MINIMAL_ANXIETY;
+    anxietyExplanation = anxietyExplanations.minimal_anxiety;
+  } else if (score <= 9) {
+    anxietySeverity = AnxietySeverity.MILD_ANXIETY;
+    anxietyExplanation = anxietyExplanations.mild_anxiety;
+  } else if (score <= 14) {
+    anxietySeverity = AnxietySeverity.MODERATE_ANXIETY;
+    anxietyExplanation = anxietyExplanations.moderate_anxiety;
+  } else if (score <= 21) {
+    anxietySeverity = AnxietySeverity.MODERATE_TO_SEVERE_ANXIETY;
+    anxietyExplanation = anxietyExplanations.severe_anxiety;
+  } else {
+    console.log("Depression Score out of bounds!");
+  }
+
+  return {
+    id: 0,
+    userId: 0,
+    timestamp: Date.now(),
+    score: score,
+    severity: anxietySeverity!,
+    action: anxietyExplanation!,
+    impactQuestionAnswer: impactQestionAnswer,
+  };
 }
