@@ -1,6 +1,7 @@
 import { assertEquals } from "@std/assert";
-import { entryFromString } from "../utils/misc.ts";
-import { Entry } from "../types/types.ts";
+import { entryFromString, entryToString } from "../utils/misc.ts";
+import { Entry, GAD7Score } from "../types/types.ts";
+import test from "node:test";
 
 Deno.test("Test entryFromString()", () => {
   const testEntryString = `Page 1 of 15
@@ -37,3 +38,52 @@ Page 1 of 15`;
 
   assertEquals(entryFromString(testEntryString), testEntry);
 });
+
+Deno.test("Test entryToString()", () => {
+  const testEntryString = `<b>Date Created</b> 12/31/1969, 5:00:00 PM
+<b>Last Edited</b> 12/31/1969, 5:00:00 PM
+<b><u>Emotion</u></b>
+Test 😌
+
+<b><u>Emotion Description</u></b>
+Test Entry
+
+<b><u>Situation</u></b>
+Test Entry
+
+<b><u>Automatic Thoughts</u></b>
+Test Entry`;
+
+  const testEntry: Entry = {
+    userId: 0,
+    timestamp: 0,
+    lastEditedTimestamp: 0,
+    emotion: {
+      emotionName: "Test",
+      emotionEmoji: "😌",
+      emotionDescription: "Test Entry",
+    },
+    situation: "Test Entry",
+    automaticThoughts: "Test Entry",
+    selfiePath: null,
+  };
+  console.log(entryToString(testEntry));
+  assertEquals(entryToString(testEntry), testEntryString);
+});
+
+// Deno.test("Test calcGad7Score()", () => {
+//   const testScores: GAD7Score[] = [
+//     {
+//       id: 0,
+//       userId: 0,
+//       timestamp: 0,
+//       score: 4,
+//       severity: AnxietySeverity.MINIMAL_ANXIETY,
+//       impactQuestionAnswer: ""
+//     }
+//   ];
+
+//   for (const score in testScores) {
+
+//   }
+// })

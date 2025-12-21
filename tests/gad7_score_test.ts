@@ -18,6 +18,7 @@ const testGadScore: GAD7Score = {
   timestamp: 12345,
   score: 10,
   severity: AnxietySeverity.MINIMAL_ANXIETY,
+  action: "Test Action",
   impactQuestionAnswer: "Test",
 };
 
