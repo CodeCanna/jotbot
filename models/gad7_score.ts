@@ -35,18 +35,18 @@ export function insertGadScore(score: GAD7Score, dbPath: PathLike) {
   return queryResult;
 }
 
-export function updateGadScore(id: number) {
-  // TODO
-}
+// export function updateGadScore(id: number) {
+//   // TODO
+// }
 
-export function deleteGadScore(id: number) {
-  // TODO
-}
+// export function deleteGadScore(id: number) {
+//   // TODO
+// }
 
-export function getGadScoreById(id: number) {
-  // TODO
-}
+// export function getGadScoreById(id: number) {
+//   // TODO
+// }
 
-export function getAllGadScoresByUserId(userId: number) {
-  // TODO
-}
+// export function getAllGadScoresByUserId(userId: number) {
+//   // TODO
+// }
