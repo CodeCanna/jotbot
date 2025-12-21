@@ -16,6 +16,6 @@ export function createDatabase(dbFile: PathLike) {
     createSettingsTable(dbFile);
   } catch (err) {
     console.error(err);
-    throw new Error (`Failed to create database: ${err}`);
+    throw new Error(`Failed to create database: ${err}`);
   }
 }
