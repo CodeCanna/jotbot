@@ -9,7 +9,7 @@ import {
   insertEntry,
   updateEntry,
 } from "../models/entry.ts";
-import { dbFile, testDbFile } from "../constants/paths.ts";
+import { testDbFile } from "../constants/paths.ts";
 import { assertObjectMatch } from "@std/assert/object-match";
 
 // Create test entry
