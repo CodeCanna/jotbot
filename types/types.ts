@@ -63,3 +63,10 @@ export type GAD7Score = {
   action?: string;
   impactQuestionAnswer: string;
 };
+
+export type Settings = {
+  id?: number,
+  userId: number,
+  storeMentalHealthInfo: boolean,
+  selfieDirectory: string
+}
