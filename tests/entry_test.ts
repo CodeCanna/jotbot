@@ -72,7 +72,7 @@ Deno.test("Test updateEntry()", async () => {
   testEntry.lastEditedTimestamp = 123456789;
 
   // Update entry
-  const queryResult = updateEntry(1, testEntry, dbFile);
+  const queryResult = updateEntry(1, testEntry, testDbFile);
 
   assertEquals(queryResult.changes, 1);
   assertEquals(queryResult.lastInsertRowid, 0);
