@@ -5,7 +5,6 @@ import {
   GAD7Score,
   PHQ9Score,
 } from "../types/types.ts";
-// import { getAllEntriesByUserId } from "../models/entry.ts";
 import {
   anxietyExplanations,
   depressionExplanations,
