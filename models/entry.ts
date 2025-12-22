@@ -1,8 +1,13 @@
 import { DatabaseSync, SQLOutputValue } from "node:sqlite";
 import { Entry } from "../types/types.ts";
-// import { dbFilePath } from "../constants/paths.ts";
 import { PathLike } from "node:fs";
 
+/**
+ * Insert entry into entry_db
+ * @param entry Entry - Entry to insert into entry_db
+ * @param dbFile PathLike - Path to the sqlite db file
+ * @returns StatementResultingChanges
+ */
 export function insertEntry(entry: Entry, dbFile: PathLike) {
   const db = new DatabaseSync(dbFile);
   if (
@@ -32,6 +37,13 @@ export function insertEntry(entry: Entry, dbFile: PathLike) {
   return queryResult;
 }
 
+/**
+ * Update an entry based on it's ID
+ * @param entryId number - ID of entry to update
+ * @param updatedEntry Entry - Updated entry to store
+ * @param dbFile PathLike - Path to the sqlite db file
+ * @returns StatementResultingChanges
+ */
 export function updateEntry(
   entryId: number,
   updatedEntry: Entry,
@@ -69,6 +81,12 @@ export function updateEntry(
   }
 }
 
+/**
+ * Deletes an entry by it's ID
+ * @param entryId Number - ID of entry to delete
+ * @param dbFile PathLike - Path to the sqlite db file
+ * @returns StatementResultingChanges | undefined
+ */
 export function deleteEntryById(entryId: number, dbFile: PathLike) {
   try {
     const db = new DatabaseSync(dbFile);
@@ -94,6 +112,12 @@ export function deleteEntryById(entryId: number, dbFile: PathLike) {
   }
 }
 
+/**
+ * 
+ * @param entryId Number - ID of user who owns this entry
+ * @param dbFile PathLike - Path to the sqlite db file
+ * @returns Entry
+ */
 export function getEntryById(entryId: number, dbFile: PathLike): Entry {
   let queryResult: Record<string, SQLOutputValue> | undefined;
   try {
@@ -126,6 +150,12 @@ export function getEntryById(entryId: number, dbFile: PathLike): Entry {
   };
 }
 
+/**
+ * Retrieve all of a user's entries from entry_db table
+ * @param userId Number - ID of user who owns these entries
+ * @param dbFile PathLike - Path to the sqlite db file
+ * @returns Entry[]
+ */
 export function getAllEntriesByUserId(
   userId: number,
   dbFile: PathLike,
