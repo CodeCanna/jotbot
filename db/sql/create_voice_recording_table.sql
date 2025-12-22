@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS voice_recording_db (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entryId INTEGER NOT NULL,
+    path TEXT NOT NULL,
+    length INTEGER,
+    FOREIGN KEY (entryId) REFERENCES journal_db(id) ON DELETE CASCADE
+)

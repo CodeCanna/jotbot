@@ -1,0 +1,1 @@
+INSERT INTO entry_db (userId, timestamp, lastEditedTimestamp, situation, automaticThoughts, emotionName, emotionEmoji, emotionDescription, selfiePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);

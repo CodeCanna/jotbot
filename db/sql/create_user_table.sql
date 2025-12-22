@@ -1,0 +1,8 @@
+-- User Table
+CREATE TABLE IF NOT EXISTS user_db (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegramId INTEGER UNIQUE,
+    username TEXT NOT NULL UNIQUE,
+    dob INTEGER NOT NULL,
+    joinedDate INTEGER NOT NULL
+);
