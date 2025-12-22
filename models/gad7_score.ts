@@ -2,6 +2,12 @@ import { DatabaseSync } from "node:sqlite";
 import { GAD7Score } from "../types/types.ts";
 import { PathLike } from "node:fs";
 
+/**
+ * Insert GAD-7 score into gad_score_db table
+ * @param score 
+ * @param dbPath 
+ * @returns StatementResultingChanges
+ */
 export function insertGadScore(score: GAD7Score, dbPath: PathLike) {
   let queryResult;
   try {
