@@ -1,4 +1,4 @@
-import { Bot, Context, InlineQueryResultBuilder } from "grammy";
+import { Bot, Context, InlineKeyboard, InlineQueryResultBuilder } from "grammy";
 import {
   type ConversationFlavor,
   conversations,
@@ -29,6 +29,7 @@ import { crisisString, helpString } from "./constants/strings.ts";
 import { kitties } from "./handlers/kitties.ts";
 import { phq9_assessment } from "./handlers/phq9_assessment.ts";
 import { gad7_assessment } from "./handlers/gad7_assessment.ts";
+import { new_journal_entry } from "./handlers/new_journal_entry.ts";
 import { dbFile } from "./constants/paths.ts";
 import { createDatabase } from "./utils/db.ts";
 import { getSettingsById, updateSettings } from "./models/settings.ts";
@@ -80,6 +81,7 @@ if (import.meta.main) {
   jotBot.use(createConversation(kitties));
   jotBot.use(createConversation(phq9_assessment));
   jotBot.use(createConversation(gad7_assessment));
+  jotBot.use(createConversation(new_journal_entry));
 
   jotBotCommands.command("start", "Starts the bot.", async (ctx) => {
     // Check if user exists in Database
@@ -134,6 +136,21 @@ if (import.meta.main) {
       await ctx.conversation.enter("new_entry");
     }
   });
+
+  jotBotCommands.command(
+    "new_journal_entry",
+    "Create new journal entry",
+    async (ctx) => {
+      if (!userExists(ctx.from?.id!, dbFile)) {
+        await ctx.reply(
+          `Hello ${ctx.from?.username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+          { reply_markup: registerKeyboard },
+        );
+      } else {
+        await ctx.conversation.enter("new_journal_entry");
+      }
+    },
+  );
 
   jotBotCommands.command(
     "view_entries",
@@ -201,12 +218,12 @@ if (import.meta.main) {
   );
 
   // jotBotCommands.command(
-  //   "mental_health_snapshot",
+  //   "snapshot",
   //   "Show a snapshot of your mental health based on your data.",
   //   async (ctx) => {
-  //     // Build snapshot
-  //     const lastDepressionScore =
-  //     await ctx.reply(`You mental health snapshot:`)
+  //     // // Build snapshot
+  //     // const lastDepressionScore =
+  //     // await ctx.reply(`You mental health snapshot:`)
   //   },
   // );
 
@@ -253,7 +270,7 @@ ${entries[entry].automaticThoughts}
   });
 
   jotBot.callbackQuery(
-    ["smhs", "change-selfie-path", "settings-back"],
+    ["smhs", "settings-back"],
     async (ctx) => {
       switch (ctx.callbackQuery.data) {
         case "smhs": {
@@ -261,19 +278,24 @@ ${entries[entry].automaticThoughts}
           console.log(settings);
           if (settings?.storeMentalHealthInfo) {
             settings.storeMentalHealthInfo = false;
-            await ctx.editMessageText(`Mental health info will not be saved`, {
-              reply_markup: settingsKeyboard,
-            });
+            await ctx.editMessageText(
+              `I will <b>NOT</b> store your GAD-7 and PHQ-9 scores`,
+              {
+                reply_markup: settingsKeyboard,
+                parse_mode: "HTML",
+              },
+            );
           } else {
             settings!.storeMentalHealthInfo = true;
-            await ctx.editMessageText(`Mental health info will be saved.`, {
-              reply_markup: settingsKeyboard,
-            });
+            await ctx.editMessageText(
+              `I <b>WILL</b> store your GAD-7 and PHQ-9 scores`,
+              {
+                reply_markup: settingsKeyboard,
+                parse_mode: "HTML",
+              },
+            );
           }
           updateSettings(ctx.from?.id!, settings!, dbFile);
-          break;
-        }
-        case "change-selfie-path": {
           break;
         }
         case "settings-back": {
