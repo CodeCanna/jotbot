@@ -2,6 +2,12 @@ import { PathLike } from "node:fs";
 import { JournalEntry } from "../types/types.ts";
 import { DatabaseSync } from "node:sqlite";
 
+/**
+ * Stores a journal entry
+ * @param journalEntry Journal entry to store
+ * @param dbFile The file path pointing to the DB file
+ * @returns StatementResultingChanges shows changes made to the DB
+ */
 export function insertJournalEntry(
   journalEntry: JournalEntry,
   dbFile: PathLike,
@@ -34,6 +40,12 @@ export function insertJournalEntry(
   }
 }
 
+/**
+ * Updates the JournalEntry passed in the DB
+ * @param journalEntry The journal entry to update
+ * @param dbFile The file path pointing to the DB file
+ * @returns StatementResultingChanges shows changes made to the DB
+ */
 export function updateJournalEntry(
   journalEntry: JournalEntry,
   dbFile: PathLike,
@@ -61,6 +73,12 @@ export function updateJournalEntry(
   }
 }
 
+/**
+ * Deletes a journal entry by it's id
+ * @param id Id of the journal entry to delete
+ * @param dbFile The file path pointing to the DB file
+ * @returns StatementResultingChanges shows changes made to the DB
+ */
 export function deleteJournalEntryById(
   id: number,
   dbFile: PathLike,
@@ -82,6 +100,12 @@ export function deleteJournalEntryById(
   }
 }
 
+/**
+ * Retrieve a journal entry from the database by it's id
+ * @param id Id of the entry to retrieve
+ * @param dbFile The file path pointing to the DB file
+ * @returns JournalEntry
+ */
 export function getJournalEntryById(
   id: number,
   dbFile: PathLike,
@@ -113,6 +137,12 @@ export function getJournalEntryById(
   }
 }
 
+/**
+ * Grab all of a user's journal entries
+ * @param userId The id of the user who owns the journal entries
+ * @param dbFile The file path pointing to the DB file
+ * @returns JournalEntry[]
+ */
 export function getAllJournalEntriesByUserId(userId: number, dbFile: PathLike) {
   const journalEntries: JournalEntry[] = [];
   try {
