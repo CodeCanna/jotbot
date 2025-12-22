@@ -2,6 +2,12 @@ import { PathLike } from "node:fs";
 import { Settings } from "../types/types.ts";
 import { DatabaseSync } from "node:sqlite";
 
+/**
+ * 
+ * @param userId 
+ * @param dbFile 
+ * @returns 
+ */
 export function insertSettings(userId: number, dbFile: PathLike) {
   try {
     const db = new DatabaseSync(dbFile);
@@ -35,10 +41,9 @@ export function updateSettings(
     db.exec("PRAGMA foreign_keys = ON;");
 
     const queryResult = db.prepare(
-      `UPDATE OR FAIL settings_db SET storeMentalHealthInfo = ?, selfieDirectory = ? WHERE userId = ${userId}`,
+      `UPDATE OR FAIL settings_db SET storeMentalHealthInfo = ? WHERE userId = ${userId}`,
     ).run(
       Number(updatedSettings.storeMentalHealthInfo),
-      updatedSettings.selfieDirectory,
     );
     db.close();
     return queryResult;
@@ -47,6 +52,12 @@ export function updateSettings(
   }
 }
 
+/**
+ * 
+ * @param userId 
+ * @param dbFile 
+ * @returns 
+ */
 export function getSettingsById(userId: number, dbFile: PathLike) {
   try {
     const db = new DatabaseSync(dbFile);
