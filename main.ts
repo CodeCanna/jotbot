@@ -1,4 +1,4 @@
-import { Bot, Context, InlineKeyboard, InlineQueryResultBuilder } from "grammy";
+import { Bot, Context, InlineQueryResultBuilder } from "grammy";
 import {
   type ConversationFlavor,
   conversations,
