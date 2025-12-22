@@ -70,13 +70,29 @@ export type Settings = {
   storeMentalHealthInfo: boolean;
 };
 
+export type JournalEntryPhoto = {
+  id: number;
+  url: string;
+  caption: string;
+  width: number;
+  height: number;
+  fileSize: number;
+};
+
 export type JournalEntry = {
   id?: number;
   userId: number;
+  imagesId?: number | null;
+  voiceRecordingsId?: number | null;
   timestamp: number;
   lastEditedTimestamp?: number | null;
   content: string;
   length: number;
-  images?: string[] | null;
-  voiceRecordings?: string[] | null;
+};
+
+export type VoiceRecording = {
+  id?: number;
+  entryId: number;
+  path: string;
+  length: number;
 };
