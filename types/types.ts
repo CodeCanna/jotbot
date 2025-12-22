@@ -68,7 +68,6 @@ export type Settings = {
   id?: number;
   userId: number;
   storeMentalHealthInfo: boolean;
-  selfieDirectory: string;
 };
 
 export type JournalEntry = {
