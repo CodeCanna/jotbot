@@ -3,6 +3,12 @@ import { PHQ9Score } from "../types/types.ts";
 import { DatabaseSync } from "node:sqlite";
 import { depressionSeverityStringToEnum } from "../utils/misc.ts";
 
+/**
+ * 
+ * @param phqScore 
+ * @param dbFile 
+ * @returns 
+ */
 export function insertPhqScore(phqScore: PHQ9Score, dbFile: PathLike) {
   try {
     const db = new DatabaseSync(dbFile);
@@ -30,6 +36,12 @@ export function insertPhqScore(phqScore: PHQ9Score, dbFile: PathLike) {
   }
 }
 
+/**
+ * 
+ * @param userId 
+ * @param dbFile 
+ * @returns 
+ */
 export function getPhqScoreById(userId: number, dbFile: PathLike) {
   try {
     const db = new DatabaseSync(dbFile);
