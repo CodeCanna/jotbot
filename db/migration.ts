@@ -100,7 +100,6 @@ export function createSettingsTable(dbFile: PathLike) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER,
         storeMentalHealthInfo INTEGER DEFAULT 0,
-        selfieDirectory TEXT DEFAULT 'assets/selfies/',
         FOREIGN KEY (userId) REFERENCES user_db(telegramId)
         ON DELETE CASCADE
       );
