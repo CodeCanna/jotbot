@@ -106,6 +106,7 @@ Do you understand that this test is a simple way to help you guage your depressi
   const impactQestionAnswer = gad7FinalCtx.callbackQuery.data;
   const gad7Score: GAD7Score = calcGad7Score(
     anxietyScore,
+    ctx.from?.id!,
     impactQestionAnswer,
   );
 
@@ -125,8 +126,12 @@ ${gad7Score.action}`,
     const settings = getSettingsById(ctx.from?.id!, dbFile);
 
     if (settings?.storeMentalHealthInfo) {
-      insertGadScore(gad7Score, dbFile);
-      await ctx.reply("Score saved!");
+      try {
+        insertGadScore(gad7Score, dbFile);
+        await ctx.reply("Score saved!");
+      } catch (err) {
+        throw err;
+      }
     } else {
       await ctx.reply("Scores not saved.");
     }
