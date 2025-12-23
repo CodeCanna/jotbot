@@ -77,7 +77,7 @@ export function entryFromString(entryString: string): Entry {
 //   for await (const dirEntry of Deno.readDir("assets/selfies")) {
 //     for (const regex in dateTimeStrings) {
 //       if (!dateTimeStrings[regex].test(dirEntry.name)) {
-//         Deno.remove(`assets/selfies/${dirEntry.name}`);
+//         Deno.removeSync(`assets/selfies/${dirEntry.name}`);
 //       }
 //     }
 //   }
@@ -144,6 +144,7 @@ export function calcPhq9Score(
 
 export function calcGad7Score(
   score: number,
+  userId: number,
   impactQestionAnswer: string,
 ): GAD7Score {
   let anxietySeverity: AnxietySeverity;
@@ -167,7 +168,7 @@ export function calcGad7Score(
 
   return {
     id: 0,
-    userId: 0,
+    userId: userId,
     timestamp: Date.now(),
     score: score,
     severity: anxietySeverity!,
