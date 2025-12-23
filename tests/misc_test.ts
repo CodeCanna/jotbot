@@ -80,5 +80,5 @@ Deno.test("Test getLatestEntryId()", () => {
   createUserTable(testDbFile);
   insertUser(testUser, testDbFile);
   assertEquals(getLatestId(testDbFile, "user_db"), 1);
-  Deno.remove(testDbFile);
+  Deno.removeSync(testDbFile);
 });

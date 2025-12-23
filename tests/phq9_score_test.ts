@@ -34,7 +34,7 @@ Deno.test("Test insertPhqScore()", async () => {
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 1);
 
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
 
 Deno.test("Test getPhqScoreById()", async () => {
@@ -46,5 +46,5 @@ Deno.test("Test getPhqScoreById()", async () => {
   const score = getPhqScoreByUserId(testPhqScore.userId, testDbFile);
 
   assertObjectMatch(score!, testPhqScore);
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });

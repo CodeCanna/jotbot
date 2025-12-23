@@ -42,7 +42,7 @@ Deno.test("Test insertJournalEntry()", async () => {
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 1);
 
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
 
 Deno.test("Test getJournalEntryById()", async () => {
@@ -53,7 +53,7 @@ Deno.test("Test getJournalEntryById()", async () => {
 
   const entry = getJournalEntryById(1, testDbFile);
   assertObjectMatch(entry!, testJournalEntry);
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
 
 Deno.test("Test updateJournalEntry()", async () => {
@@ -68,7 +68,7 @@ Deno.test("Test updateJournalEntry()", async () => {
   const queryResult = updateJournalEntry(updatedJournalEntry, testDbFile);
   assertEquals(queryResult?.changes, 1);
   console.log(queryResult);
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
 
 Deno.test("Test deleteJournalEntryById()", async () => {
@@ -81,7 +81,7 @@ Deno.test("Test deleteJournalEntryById()", async () => {
 
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 0);
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
 
 Deno.test("Test getAllJournalEntriesByUserId()", async () => {
@@ -97,5 +97,5 @@ Deno.test("Test getAllJournalEntriesByUserId()", async () => {
   const entries = getAllJournalEntriesByUserId(12345, testDbFile);
 
   assertEquals(entries.length, 5);
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });

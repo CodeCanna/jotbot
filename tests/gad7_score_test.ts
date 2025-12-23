@@ -1,5 +1,5 @@
-import { assertEquals } from "@std/assert";
-import { insertGadScore } from "../models/gad7_score.ts";
+import { assertEquals, assertObjectMatch } from "@std/assert";
+import { getGadScoreById, insertGadScore } from "../models/gad7_score.ts";
 import { AnxietySeverity, GAD7Score, User } from "../types/types.ts";
 import { createGadScoreTable, createUserTable } from "../db/migration.ts";
 import { insertUser } from "../models/user.ts";
@@ -14,7 +14,7 @@ const testUser: User = {
 
 // Test gad7 score
 const testGadScore: GAD7Score = {
-  userId: testUser.telegramId,
+  userId: 12345,
   timestamp: 12345,
   score: 10,
   severity: AnxietySeverity.MINIMAL_ANXIETY,
@@ -22,15 +22,27 @@ const testGadScore: GAD7Score = {
   impactQuestionAnswer: "Test",
 };
 
-Deno.test("Test insertGadScore()", async () => {
+Deno.test("Test insertGadScore()", () => {
   // Create test Database
-  await createGadScoreTable(testDbFile);
-  await createUserTable(testDbFile);
+  createGadScoreTable(testDbFile);
+  createUserTable(testDbFile);
   insertUser(testUser, testDbFile);
 
   const result = insertGadScore(testGadScore, testDbFile);
   assertEquals(result?.changes, 1);
 
   // Clean up test db
-  await Deno.remove(testDbFile);
+  Deno.removeSync(testDbFile);
+});
+
+Deno.test("Test getGadScoreById()", () => {
+  // Create test Database
+  createGadScoreTable(testDbFile);
+  createUserTable(testDbFile);
+  insertUser(testUser, testDbFile);
+  insertGadScore(testGadScore, testDbFile);
+
+  const gadScore = getGadScoreById(1, testDbFile);
+  assertObjectMatch(gadScore, testGadScore);
+  Deno.removeSync(testDbFile);
 });

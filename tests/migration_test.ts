@@ -25,7 +25,7 @@ Deno.test("Test createEntryTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "entry_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });
 
 Deno.test("Test createGadScoreTable()", async () => {
@@ -40,7 +40,7 @@ Deno.test("Test createGadScoreTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "gad_score_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });
 
 Deno.test("Test createPhqScoreTable()", async () => {
@@ -55,7 +55,7 @@ Deno.test("Test createPhqScoreTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "phq_score_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });
 
 Deno.test("Test createUserTable()", async () => {
@@ -70,7 +70,7 @@ Deno.test("Test createUserTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "user_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });
 
 Deno.test("Test createSettingsTable()", async () => {
@@ -85,7 +85,7 @@ Deno.test("Test createSettingsTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "settings_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });
 
 Deno.test("Test createJournalTable()", async () => {
@@ -100,7 +100,7 @@ Deno.test("Test createJournalTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "journal_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });
 
 Deno.test("Test createJournalEntryPhotosTable()", async () => {
@@ -115,7 +115,7 @@ Deno.test("Test createJournalEntryPhotosTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "photo_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });
 
 Deno.test("Test createVoiceRecordingTable()", async () => {
@@ -129,5 +129,5 @@ Deno.test("Test createVoiceRecordingTable()", async () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "voice_recording_db");
-  await Deno.remove(testDbPath);
+  await Deno.removeSync(testDbPath);
 });

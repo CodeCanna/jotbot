@@ -34,7 +34,7 @@ Deno.test("Test insertSettings()", async () => {
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 1);
 
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
 
 Deno.test("Test getSettingsById()", async () => {
@@ -47,7 +47,7 @@ Deno.test("Test getSettingsById()", async () => {
 
   assertObjectMatch(settings!, testSettings);
 
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
 Deno.test("Test updateSettings()", async () => {
   await createUserTable(testDbFile);
@@ -68,5 +68,5 @@ Deno.test("Test updateSettings()", async () => {
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 0);
 
-  await Deno.remove(testDbFile);
+  await Deno.removeSync(testDbFile);
 });
