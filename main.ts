@@ -31,7 +31,7 @@ import { phq9_assessment } from "./handlers/phq9_assessment.ts";
 import { gad7_assessment } from "./handlers/gad7_assessment.ts";
 import { new_journal_entry } from "./handlers/new_journal_entry.ts";
 import { dbFile } from "./constants/paths.ts";
-import { createDatabase, getLatestId } from "./utils/db.ts";
+import { createDatabase, getLatestId } from "./utils/dbUtils.ts";
 import { getSettingsById, updateSettings } from "./models/settings.ts";
 import { getPhqScoreById } from "./models/phq9_score.ts";
 import { getGadScoreById } from "./models/gad7_score.ts";
