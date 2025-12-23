@@ -1,0 +1,1 @@
+SELECT * FROM gad_score_db WHERE id = <ID>;
