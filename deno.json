@@ -1,14 +1,15 @@
 {
   "tasks": {
-    "dev": "deno run --allow-write --allow-read --allow-net --allow-env --watch main.ts",
-    "test": "deno test --allow-write --allow-read --allow-net --allow-env ./tests/*",
-    "bin": "deno compile --allow-write --allow-read --allow-net --allow-env main.ts"
+    "dev": "deno run --allow-import --allow-write --allow-read --allow-net --allow-env --watch main.ts",
+    "test": "deno test --allow-import --allow-write --allow-read --allow-net --allow-env ./tests/*",
+    "bin": "deno compile --allow-import --allow-write --allow-read --allow-net --allow-env main.ts"
   },
   "imports": {
-    "@grammyjs/commands": "npm:@grammyjs/commands@^1.2.0",
-    "@grammyjs/conversations": "npm:@grammyjs/conversations@^2.1.1",
-    "@grammyjs/files": "npm:@grammyjs/files@^1.2.0",
     "@std/assert": "jsr:@std/assert@^1.0.16",
-    "grammy": "npm:grammy@^1.38.4"
+    "@grammyjs/commands": "https://deno.land/x/grammy_commands@v1.2.0/mod.ts",
+    "@grammyjs/conversations": "https://deno.land/x/grammy_conversations@v2.1.0/mod.ts",
+    "@grammyjs/files": "https://deno.land/x/grammy_files@v1.2.0/mod.ts",
+    "grammy": "https://deno.land/x/grammy@v1.38.3/mod.ts",
+    "grammy/types": "https://deno.land/x/grammy@v1.38.3/types.ts"
   }
 }
