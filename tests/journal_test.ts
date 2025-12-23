@@ -32,9 +32,9 @@ const testUser: User = {
   joinedDate: new Date(Date.now()),
 };
 
-Deno.test("Test insertJournalEntry()", async () => {
-  await createUserTable(testDbFile);
-  await createJournalTable(testDbFile);
+Deno.test("Test insertJournalEntry()", () => {
+  createUserTable(testDbFile);
+  createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
 
   const queryResult = insertJournalEntry(testJournalEntry, testDbFile);
@@ -42,21 +42,21 @@ Deno.test("Test insertJournalEntry()", async () => {
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 1);
 
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test getJournalEntryById()", async () => {
-  await createUserTable(testDbFile);
-  await createJournalTable(testDbFile);
+Deno.test("Test getJournalEntryById()", () => {
+  createUserTable(testDbFile);
+  createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
   insertJournalEntry(testJournalEntry, testDbFile);
 
   const entry = getJournalEntryById(1, testDbFile);
   assertObjectMatch(entry!, testJournalEntry);
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test updateJournalEntry()", async () => {
+Deno.test("Test updateJournalEntry()", () => {
   createUserTable(testDbFile);
   createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
@@ -68,10 +68,10 @@ Deno.test("Test updateJournalEntry()", async () => {
   const queryResult = updateJournalEntry(updatedJournalEntry, testDbFile);
   assertEquals(queryResult?.changes, 1);
   console.log(queryResult);
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test deleteJournalEntryById()", async () => {
+Deno.test("Test deleteJournalEntryById()", () => {
   createUserTable(testDbFile);
   createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
@@ -81,10 +81,10 @@ Deno.test("Test deleteJournalEntryById()", async () => {
 
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 0);
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test getAllJournalEntriesByUserId()", async () => {
+Deno.test("Test getAllJournalEntriesByUserId()", () => {
   createUserTable(testDbFile);
   createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
@@ -97,5 +97,5 @@ Deno.test("Test getAllJournalEntriesByUserId()", async () => {
   const entries = getAllJournalEntriesByUserId(12345, testDbFile);
 
   assertEquals(entries.length, 5);
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });

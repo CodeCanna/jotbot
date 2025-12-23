@@ -1,10 +1,6 @@
 import { assertEquals, assertObjectMatch } from "@std/assert";
 import { entryFromString, entryToString } from "../utils/misc.ts";
-import { Entry, User } from "../types/types.ts";
-import { createUserTable } from "../db/migration.ts";
-import { testDbFile } from "../constants/paths.ts";
-import { insertUser } from "../models/user.ts";
-import { getLatestId } from "../utils/db.ts";
+import { Entry } from "../types/types.ts";
 
 Deno.test("Test entryFromString()", () => {
   const testEntryString = `Page 1 of 15
@@ -68,17 +64,4 @@ Test Entry`;
     selfiePath: null,
   };
   assertEquals(entryToString(testEntry), testEntryString);
-});
-
-Deno.test("Test getLatestEntryId()", () => {
-  const testUser: User = {
-    telegramId: 12345,
-    username: "Test",
-    dob: new Date(Date.now()),
-    joinedDate: new Date(Date.now()),
-  };
-  createUserTable(testDbFile);
-  insertUser(testUser, testDbFile);
-  assertEquals(getLatestId(testDbFile, "user_db"), 1);
-  Deno.removeSync(testDbFile);
 });

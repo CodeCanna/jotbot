@@ -24,7 +24,7 @@ const testPhqScore: PHQ9Score = {
   impactQuestionAnswer: "Test Impact Answer",
 };
 
-Deno.test("Test insertPhqScore()", async () => {
+Deno.test("Test insertPhqScore()", () => {
   createUserTable(testDbFile);
   createPhqScoreTable(testDbFile);
   insertUser(testUser, testDbFile);
@@ -34,17 +34,17 @@ Deno.test("Test insertPhqScore()", async () => {
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 1);
 
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test getPhqScoreById()", async () => {
-  await createUserTable(testDbFile);
-  await createPhqScoreTable(testDbFile);
+Deno.test("Test getPhqScoreById()", () => {
+  createUserTable(testDbFile);
+  createPhqScoreTable(testDbFile);
   insertUser(testUser, testDbFile);
   insertPhqScore(testPhqScore, testDbFile);
 
   const score = getPhqScoreByUserId(testPhqScore.userId, testDbFile);
 
   assertObjectMatch(score!, testPhqScore);
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });

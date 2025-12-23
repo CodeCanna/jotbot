@@ -36,10 +36,10 @@ const testUser: User = {
   joinedDate: new Date(Date.now()),
 };
 
-Deno.test("Test insertEntry()", async () => {
+Deno.test("Test insertEntry()", () => {
   // Create test Database
-  await createUserTable(testDbFile);
-  await createEntryTable(testDbFile);
+  createUserTable(testDbFile);
+  createEntryTable(testDbFile);
 
   try {
     // Insert test user
@@ -55,13 +55,13 @@ Deno.test("Test insertEntry()", async () => {
   assertEquals(queryResult.lastInsertRowid, 1);
 
   // Clean up
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test updateEntry()", async () => {
+Deno.test("Test updateEntry()", () => {
   // Create test Database
-  await createUserTable(testDbFile);
-  await createEntryTable(testDbFile);
+  createUserTable(testDbFile);
+  createEntryTable(testDbFile);
 
   insertUser(testUser, testDbFile);
   //Insert test entry
@@ -78,13 +78,13 @@ Deno.test("Test updateEntry()", async () => {
   assertEquals(queryResult.lastInsertRowid, 0);
 
   // Clean up
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test deleteEntryById()", async () => {
+Deno.test("Test deleteEntryById()", () => {
   // Create test Database
-  await createUserTable(testDbFile);
-  await createEntryTable(testDbFile);
+  createUserTable(testDbFile);
+  createEntryTable(testDbFile);
 
   insertUser(testUser, testDbFile);
   //Insert test entry
@@ -96,13 +96,13 @@ Deno.test("Test deleteEntryById()", async () => {
   assertEquals(queryResult?.lastInsertRowid, 0);
 
   // Clean up
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test getEntryById()", async () => {
+Deno.test("Test getEntryById()", () => {
   // Create test Database
-  await createUserTable(testDbFile);
-  await createEntryTable(testDbFile);
+  createUserTable(testDbFile);
+  createEntryTable(testDbFile);
 
   insertUser(testUser, testDbFile);
   //Insert test entry
@@ -114,13 +114,13 @@ Deno.test("Test getEntryById()", async () => {
   assertObjectMatch(testEntry, entry);
 
   // Clean up
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
 
-Deno.test("Test getAllEntriesByUserId()", async () => {
+Deno.test("Test getAllEntriesByUserId()", () => {
   // Create test Database
-  await createUserTable(testDbFile);
-  await createEntryTable(testDbFile);
+  createUserTable(testDbFile);
+  createEntryTable(testDbFile);
   insertUser(testUser, testDbFile);
 
   // Insert 5 entries
@@ -135,5 +135,5 @@ Deno.test("Test getAllEntriesByUserId()", async () => {
     assertEquals(entries[entry].id, Number(entry) + 1);
   }
 
-  await Deno.removeSync(testDbFile);
+  Deno.removeSync(testDbFile);
 });
