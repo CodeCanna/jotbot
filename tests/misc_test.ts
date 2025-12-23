@@ -4,7 +4,6 @@ import { Entry, User } from "../types/types.ts";
 import { createUserTable } from "../db/migration.ts";
 import { testDbFile } from "../constants/paths.ts";
 import { insertUser } from "../models/user.ts";
-import { debugPort } from "node:process";
 import { getLatestId } from "../utils/db.ts";
 
 Deno.test("Test entryFromString()", () => {
@@ -76,8 +75,8 @@ Deno.test("Test getLatestEntryId()", () => {
     telegramId: 12345,
     username: "Test",
     dob: new Date(Date.now()),
-    joinedDate: new Date(Date.now())
-  }
+    joinedDate: new Date(Date.now()),
+  };
   createUserTable(testDbFile);
   insertUser(testUser, testDbFile);
   assertEquals(getLatestId(testDbFile, "user_db"), 1);
