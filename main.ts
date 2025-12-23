@@ -31,8 +31,9 @@ import { phq9_assessment } from "./handlers/phq9_assessment.ts";
 import { gad7_assessment } from "./handlers/gad7_assessment.ts";
 import { new_journal_entry } from "./handlers/new_journal_entry.ts";
 import { dbFile } from "./constants/paths.ts";
-import { createDatabase } from "./utils/db.ts";
+import { createDatabase, getLatestId } from "./utils/db.ts";
 import { getSettingsById, updateSettings } from "./models/settings.ts";
+import { getPhqScoreById, getPhqScoreByUserId } from "./models/phq9_score.ts";
 
 if (import.meta.main) {
   // Check if database is present and if not create one
@@ -217,15 +218,17 @@ if (import.meta.main) {
     },
   );
 
-  // jotBotCommands.command(
-  //   "snapshot",
-  //   "Show a snapshot of your mental health based on your data.",
-  //   async (ctx) => {
-  //     // // Build snapshot
-  //     // const lastDepressionScore =
-  //     // await ctx.reply(`You mental health snapshot:`)
-  //   },
-  // );
+  jotBotCommands.command(
+    "snapshot",
+    "Show a snapshot of your mental health based on your data.",
+    async (ctx) => {
+      // Build snapshot
+      const lastDepressionScore = Number(getPhqScoreById(getLatestId(dbFile, "phq_score_db"), dbFile));
+      // const lastAnxietyScore = getGad
+      await ctx.reply(`You mental health snapshot:
+Last PHQ-9 Score: ${lastDepressionScore || "No Scores Found"}`);
+    },
+  );
 
   jotBot.on("inline_query", async (ctx) => {
     const entries = getAllEntriesByUserId(ctx.inlineQuery.from.id, dbFile);
