@@ -57,8 +57,8 @@ Deno.test("Test getJournalEntryById()", async () => {
 });
 
 Deno.test("Test updateJournalEntry()", async () => {
-  await createUserTable(testDbFile);
-  await createJournalTable(testDbFile);
+  createUserTable(testDbFile);
+  createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
   insertJournalEntry(testJournalEntry, testDbFile);
 
@@ -66,14 +66,14 @@ Deno.test("Test updateJournalEntry()", async () => {
   updatedJournalEntry.content = "I changed the content!";
 
   const queryResult = updateJournalEntry(updatedJournalEntry, testDbFile);
-
+  assertEquals(queryResult?.changes, 1);
   console.log(queryResult);
   await Deno.remove(testDbFile);
 });
 
 Deno.test("Test deleteJournalEntryById()", async () => {
-  await createUserTable(testDbFile);
-  await createJournalTable(testDbFile);
+  createUserTable(testDbFile);
+  createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
   insertJournalEntry(testJournalEntry, testDbFile);
 
@@ -85,8 +85,8 @@ Deno.test("Test deleteJournalEntryById()", async () => {
 });
 
 Deno.test("Test getAllJournalEntriesByUserId()", async () => {
-  await createUserTable(testDbFile);
-  await createJournalTable(testDbFile);
+  createUserTable(testDbFile);
+  createJournalTable(testDbFile);
   insertUser(testUser, testDbFile);
 
   // Insert 5 Journal Entries
