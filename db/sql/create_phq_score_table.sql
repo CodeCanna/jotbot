@@ -1,7 +1,7 @@
 -- PHQ-9 Score Table
 CREATE TABLE IF NOT EXISTS phq_score_db (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    userId INTEGER UNIQUE,
+    userId INTEGER NOT NULL,
     timestamp INTEGER NOT NULL,
     score INTEGER NOT NULL,
     severity TEXT NOT NULL,
