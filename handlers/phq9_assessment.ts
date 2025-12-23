@@ -105,6 +105,7 @@ Do you understand that this test is a simple way to help you guage your depressi
   const impactQestionAnswer = phq9FinalCtx.callbackQuery.data;
   const phq9Score: PHQ9Score = calcPhq9Score(
     depressionScore,
+    ctx.from?.id!,
     impactQestionAnswer,
   );
 
@@ -124,8 +125,13 @@ ${phq9Score.action}`,
     const settings = getSettingsById(ctx.from?.id!, dbFile);
 
     if (settings?.storeMentalHealthInfo) {
-      insertPhqScore(phq9Score, dbFile);
-      await ctx.reply("Score saved!");
+      try {
+        phq9Score.id = ctx.from?.id!;
+        insertPhqScore(phq9Score, dbFile);
+        await ctx.reply("Score saved!");
+      } catch (err) {
+        await ctx.reply(`Failed to save score: ${err}`);
+      }
     } else {
       await ctx.reply("Scores not saved.");
     }

@@ -107,6 +107,7 @@ ${entry.automaticThoughts}`;
 
 export function calcPhq9Score(
   score: number,
+  userId: number,
   impactQuestionAnswer: string,
 ): PHQ9Score {
   let depressionSeverity: DepressionSeverity;
@@ -132,8 +133,7 @@ export function calcPhq9Score(
   }
 
   return {
-    id: 0,
-    userId: 0,
+    userId: userId,
     score: score,
     severity: depressionSeverity!,
     action: depressionExplanation!,

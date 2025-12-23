@@ -32,6 +32,7 @@ export function insertPhqScore(phqScore: PHQ9Score, dbFile: PathLike) {
     return queryResult;
   } catch (err) {
     console.error(`Failed to save PHQ-9 score: ${err}`);
+    throw err;
   }
 }
 
@@ -40,7 +41,7 @@ export function insertPhqScore(phqScore: PHQ9Score, dbFile: PathLike) {
  * @param dbFile
  * @returns
  */
-export function getPhqScoreById(userId: number, dbFile: PathLike) {
+export function getPhqScoreByUserId(userId: number, dbFile: PathLike) {
   try {
     const db = new DatabaseSync(dbFile);
     if (
@@ -62,5 +63,30 @@ export function getPhqScoreById(userId: number, dbFile: PathLike) {
     };
   } catch (err) {
     console.error(`Failed to retrieve user ${userId} PHQ-9 score: ${err}`);
+  }
+}
+
+export function getPhqScoreById(id: number, dbFile: PathLike) {
+  try {
+    const db = new DatabaseSync(dbFile);
+    if (
+      !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
+    ) throw new Error("JotBot Error: Databaes integrety check failed!");
+    db.exec("PRAGMA foreign_keys = ON;");
+
+    const phqScore = db.prepare(
+      `SELECT * FROM phq_score_db WHERE id = ${id};`,
+    ).get();
+    return {
+      id: Number(phqScore?.id!),
+      userId: Number(phqScore?.userId!),
+      timestamp: Number(phqScore?.timestamp!),
+      score: Number(phqScore?.score!),
+      severity: depressionSeverityStringToEnum(String(phqScore?.severity!)),
+      action: String(phqScore?.action!),
+      impactQuestionAnswer: String(phqScore?.impact!),
+    };
+  } catch (err) {
+    console.error(`Failed to retrieve PHQ-9 score ${id}: ${err}`);
   }
 }
