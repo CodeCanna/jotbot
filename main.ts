@@ -244,7 +244,10 @@ This snap shot only shows the last score.
 Only a trained mental health professional can diagnose actual mental illness.  This is meant to be a personal reference so you may seek help if you feel you need it.
 
 <b><u>Depression Overview</u></b>
-<b>Last Taken</b> ${new Date(lastDepressionScore?.timestamp!).toLocaleString() || "No data"}
+<b>Last Taken</b> ${
+          new Date(lastDepressionScore?.timestamp!).toLocaleString() ||
+          "No data"
+        }
 <b>Last PHQ-9 Score</b> ${lastDepressionScore?.score || "No Data"}
 <b>Depression Severity</b> ${
           lastDepressionScore?.severity.toString() || "No data"
