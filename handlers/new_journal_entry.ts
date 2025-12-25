@@ -57,16 +57,17 @@ export async function new_journal_entry(
 
     try {
       const file = await imagesCtx.getFile();
+      const id = await conversation.external(() => getAllJournalEntriesByUserId(ctx.from?.id!, dbFile)[0].id!);
       const journalEntryPhoto = await conversation.external(async () =>
         await downloadTelegramImage(
           ctx.api.token,
           imagesCtx.message?.caption!,
           file,
-          getAllJournalEntriesByUserId(ctx.from?.id!, dbFile)[0].id!, // Latest ID
+          id, // Latest ID
         )
       );
       console.log(journalEntryPhoto);
-      insertJournalEntryPhoto(journalEntryPhoto, dbFile);
+      await conversation.external(() => insertJournalEntryPhoto(journalEntryPhoto, dbFile));
       await ctx.reply(`Saved photo!`);
       imageCount++;
     } catch (err) {
