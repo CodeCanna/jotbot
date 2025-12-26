@@ -39,7 +39,20 @@ import { getPhqScoreById } from "./models/phq9_score.ts";
 import { getGadScoreById } from "./models/gad7_score.ts";
 
 if (import.meta.main) {
-  // Check if database is present and if not create one
+  // Load environment variables from .env file if present
+  await load({ export: true });
+
+  // Check for required environment variables
+  const botKey = Deno.env.get("TELEGRAM_BOT_KEY");
+  if (!botKey) {
+    console.error("Error: TELEGRAM_BOT_KEY environment variable is not set. Please set it in .env file or environment.");
+    Deno.exit(1);
+  }
+  console.log("Bot key loaded successfully");
+
+  // Get optional Telegram API base URL
+  const apiBaseUrl = Deno.env.get("TELEGRAM_API_BASE_URL") || "https://api.telegram.org";
+  console.log(`Using Telegram API base URL: ${apiBaseUrl}`);
 
   // Check if db file exists if not create it and the tables
   if (!existsSync(dbFile)) {
@@ -81,6 +94,11 @@ if (import.meta.main) {
 
   const jotBot = new Bot<JotBotContext>(
     Deno.env.get("TELEGRAM_BOT_KEY") || "",
+    {
+      client: {
+        baseUrl: apiBaseUrl,
+      },
+    },
   );
   jotBot.api.config.use(hydrateFiles(jotBot.token));
   const jotBotCommands = new CommandGroup<JotBotContext>();
