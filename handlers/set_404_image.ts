@@ -1,7 +1,7 @@
 import { Context } from "grammy";
 import { Conversation } from "@grammyjs/conversations";
 import { updateCustom404Image } from "../models/settings.ts";
-import { telegramDownloadUrl } from "../constants/strings.ts";
+import { getTelegramDownloadUrl } from "../constants/strings.ts";
 import { dbFile } from "../constants/paths.ts";
 
 export async function set_404_image(conversation: Conversation, ctx: Context) {
@@ -23,11 +23,9 @@ export async function set_404_image(conversation: Conversation, ctx: Context) {
   }
 
   try {
+    const baseUrl = (ctx.api as any).options?.apiRoot || "https://api.telegram.org";
     const response = await fetch(
-      telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
-        "<file_path>",
-        tmpFile.file_path!,
-      ),
+      getTelegramDownloadUrl(baseUrl, ctx.api.token, tmpFile.file_path!),
     );
 
     if (!response.ok) {

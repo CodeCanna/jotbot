@@ -9,7 +9,7 @@ import {
 import {
   anxietyExplanations,
   depressionExplanations,
-  telegramDownloadUrl,
+   getTelegramDownloadUrl,
 } from "../constants/strings.ts";
 import { File } from "grammy/types";
 
@@ -247,6 +247,7 @@ export async function downloadTelegramImage(
   caption: string,
   telegramFile: File,
   journalEntryId: number,
+  apiBaseUrl: string = "https://api.telegram.org",
 ): Promise<JournalEntryPhoto> {
   const journalEntryPhoto: JournalEntryPhoto = {
     journalEntryId: journalEntryId,
@@ -256,10 +257,7 @@ export async function downloadTelegramImage(
   };
   try {
     const selfieResponse = await fetch(
-      telegramDownloadUrl.replace("<token>", token).replace(
-        "<file_path>",
-        telegramFile.file_path!,
-      ),
+      getTelegramDownloadUrl(apiBaseUrl, token, telegramFile.file_path!),
     );
 
     journalEntryPhoto.fileSize = telegramFile.file_size!;
