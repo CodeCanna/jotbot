@@ -1,4 +1,5 @@
-import { Bot, Context, InlineQueryResultBuilder } from "grammy";
+import { Bot, Context, InlineKeyboard, InlineQueryResultBuilder } from "grammy";
+import { load } from "@std/dotenv";
 import {
   type ConversationFlavor,
   conversations,
@@ -30,11 +31,13 @@ import { kitties } from "./handlers/kitties.ts";
 import { phq9_assessment } from "./handlers/phq9_assessment.ts";
 import { gad7_assessment } from "./handlers/gad7_assessment.ts";
 import { new_journal_entry } from "./handlers/new_journal_entry.ts";
+import { set_404_image } from "./handlers/set_404_image.ts";
 import { dbFile } from "./constants/paths.ts";
 import { createDatabase, getLatestId } from "./utils/dbUtils.ts";
-import { getSettingsById, updateSettings } from "./models/settings.ts";
+import { getSettingsById, updateCustom404Image, updateSettings } from "./models/settings.ts";
 import { getPhqScoreById } from "./models/phq9_score.ts";
 import { getGadScoreById } from "./models/gad7_score.ts";
+import { telegramDownloadUrl } from "./constants/strings.ts";
 
 if (import.meta.main) {
   // Check if database is present and if not create one
@@ -51,15 +54,25 @@ if (import.meta.main) {
     console.log("Database found!  Starting bot.");
   }
 
-  // Check if selfie directory exists and create it if it doesn't
-  if (!existsSync("assets/selfies")) {
-    try {
-      Deno.mkdir("assets/selfies");
-    } catch (err) {
-      console.error(`Failed to create selfie directory: ${err}`);
-      Deno.exit(1);
-    }
-  }
+   // Check if selfie directory exists and create it if it doesn't
+   if (!existsSync("assets/selfies")) {
+     try {
+       Deno.mkdir("assets/selfies");
+     } catch (err) {
+       console.error(`Failed to create selfie directory: ${err}`);
+       Deno.exit(1);
+     }
+   }
+
+   // Check if 404 images directory exists and create it if it doesn't
+   if (!existsSync("assets/404")) {
+     try {
+       Deno.mkdir("assets/404");
+     } catch (err) {
+       console.error(`Failed to create 404 images directory: ${err}`);
+       Deno.exit(1);
+     }
+   }
 
   type JotBotContext =
     & Context
@@ -81,9 +94,10 @@ if (import.meta.main) {
   jotBot.use(createConversation(view_entries));
   jotBot.use(createConversation(delete_account));
   jotBot.use(createConversation(kitties));
-  jotBot.use(createConversation(phq9_assessment));
-  jotBot.use(createConversation(gad7_assessment));
-  jotBot.use(createConversation(new_journal_entry));
+   jotBot.use(createConversation(phq9_assessment));
+   jotBot.use(createConversation(gad7_assessment));
+   jotBot.use(createConversation(new_journal_entry));
+   jotBot.use(createConversation(set_404_image));
 
   jotBotCommands.command("start", "Starts the bot.", async (ctx) => {
     // Check if user exists in Database
@@ -316,11 +330,11 @@ ${entries[entry].automaticThoughts}
     await ctx.conversation.enter("new_entry");
   });
 
-  jotBot.callbackQuery(
-    ["smhs", "settings-back"],
-    async (ctx) => {
-      switch (ctx.callbackQuery.data) {
-        case "smhs": {
+   jotBot.callbackQuery(
+     ["smhs", "set-404-image", "settings-back"],
+     async (ctx) => {
+       switch (ctx.callbackQuery.data) {
+         case "smhs": {
           const settings = getSettingsById(ctx.from?.id!, dbFile);
           console.log(settings);
           if (settings?.storeMentalHealthInfo) {
@@ -343,6 +357,10 @@ ${entries[entry].automaticThoughts}
             );
           }
           updateSettings(ctx.from?.id!, settings!, dbFile);
+          break;
+        }
+        case "set-404-image": {
+          await ctx.conversation.enter("set_404_image");
           break;
         }
         case "settings-back": {

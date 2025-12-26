@@ -53,4 +53,5 @@ export const keyboardFinal: InlineKeyboard = new InlineKeyboard()
 
 export const settingsKeyboard: InlineKeyboard = new InlineKeyboard()
   .text("Save Mental Health Scores", "smhs").row()
+  .text("Set 404 Image", "set-404-image").row()
   .text("Back", "settings-back");
