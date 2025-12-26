@@ -35,9 +35,26 @@ export async function set_404_image(conversation: Conversation, ctx: Context) {
     return;
   }
 
+  // Extract relative file path from absolute server path
+  // Telegram API expects paths like "photos/file_0.jpg", not "/var/lib/telegram-bot-api/.../photos/file_0.jpg"
+  let relativeFilePath = tmpFile.file_path!;
+  if (relativeFilePath.includes('/photos/') || relativeFilePath.includes('/documents/') || relativeFilePath.includes('/videos/')) {
+    // Find the last occurrence of known Telegram file directories
+    const photoIndex = relativeFilePath.lastIndexOf('/photos/');
+    const docIndex = relativeFilePath.lastIndexOf('/documents/');
+    const videoIndex = relativeFilePath.lastIndexOf('/videos/');
+
+    const lastIndex = Math.max(photoIndex, docIndex, videoIndex);
+    if (lastIndex !== -1) {
+      relativeFilePath = relativeFilePath.substring(lastIndex + 1); // Remove the leading slash
+    }
+  }
+
+  console.log(`Using relative file path: ${relativeFilePath}`);
+
   try {
     const baseUrl = (ctx.api as any).options?.apiRoot || "https://api.telegram.org";
-    const downloadUrl = getTelegramDownloadUrl(baseUrl, ctx.api.token, tmpFile.file_path!);
+    const downloadUrl = getTelegramDownloadUrl(baseUrl, ctx.api.token, relativeFilePath);
 
     console.log(`Base URL: ${baseUrl}`);
     console.log(`Download URL: ${downloadUrl}`);
@@ -58,7 +75,7 @@ export async function set_404_image(conversation: Conversation, ctx: Context) {
       // If custom API fails, try official API as fallback
       if (baseUrl !== "https://api.telegram.org") {
         console.log(`Custom API failed, trying official Telegram API as fallback...`);
-        const officialUrl = getTelegramDownloadUrl("https://api.telegram.org", ctx.api.token, tmpFile.file_path!);
+        const officialUrl = getTelegramDownloadUrl("https://api.telegram.org", ctx.api.token, relativeFilePath);
         console.log(`Official URL: ${officialUrl}`);
 
         const officialResponse = await fetch(officialUrl, {
@@ -91,31 +108,6 @@ export async function set_404_image(conversation: Conversation, ctx: Context) {
 
     console.log(`Starting file download...`);
     await finalResponse.body!.pipeTo(file.writable);
-    console.log(`File download completed`);
-
-    // Update settings
-    console.log(`Updating database settings`);
-    updateCustom404Image(ctx.from!.id, filePath, dbFile);
-    console.log(`Settings updated successfully`);
-
-    await ctx.reply("✅ 404 image set successfully!");
-    console.log(`404 image setup completed for user ${ctx.from?.id}`);
-  } catch (err) {
-    console.error(`Failed to set 404 image for user ${ctx.from?.id}:`, err);
-    await ctx.reply("❌ Failed to set 404 image. Please try again.");
-  }
-
-    const fileName = `${ctx.from?.id}_404.jpg`;
-    const filePath = `assets/404/${fileName}`;
-    console.log(`Saving to: ${filePath}`);
-
-    const file = await Deno.open(filePath, {
-      write: true,
-      create: true,
-    });
-
-    console.log(`Starting file download...`);
-    await response.body!.pipeTo(file.writable);
     console.log(`File download completed`);
 
     // Update settings
