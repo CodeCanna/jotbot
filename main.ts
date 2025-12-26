@@ -1,4 +1,4 @@
-import { Bot, Context, InlineQueryResultBuilder } from "grammy";
+import { Api, Bot, Context, InlineQueryResultBuilder } from "grammy";
 import { load } from "@std/dotenv";
 import {
   type ConversationFlavor,
@@ -96,7 +96,7 @@ if (import.meta.main) {
     Deno.env.get("TELEGRAM_BOT_KEY") || "",
     {
       client: {
-        baseUrl: apiBaseUrl,
+        apiRoot: apiBaseUrl,
       },
     },
   );
