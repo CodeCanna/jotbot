@@ -1,7 +1,7 @@
 import { PathLike } from "node:fs";
 import { PHQ9Score } from "../types/types.ts";
-import { DatabaseSync } from "node:sqlite";
 import { depressionSeverityStringToEnum } from "../utils/misc.ts";
+import { withDB } from "../utils/dbHelper.ts";
 
 /**
  * @param phqScore
@@ -9,14 +9,7 @@ import { depressionSeverityStringToEnum } from "../utils/misc.ts";
  * @returns
  */
 export function insertPhqScore(phqScore: PHQ9Score, dbFile: PathLike) {
-  try {
-    const db = new DatabaseSync(dbFile);
-
-    if (
-      !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
-    db.exec("PRAGMA foreign_keys = ON;");
-
+  return withDB(dbFile, (db) => {
     const queryResult = db.prepare(
       `INSERT INTO phq_score_db (userId, timestamp, score, severity, action, impact) VALUES (?, ?, ?, ?, ?, ?);`,
     ).run(
@@ -28,12 +21,12 @@ export function insertPhqScore(phqScore: PHQ9Score, dbFile: PathLike) {
       phqScore.impactQuestionAnswer,
     );
 
-    db.close();
+    if (queryResult.changes === 0) {
+      throw new Error("Insert failed: no changes made");
+    }
+
     return queryResult;
-  } catch (err) {
-    console.error(`Failed to save PHQ-9 score: ${err}`);
-    throw err;
-  }
+  });
 }
 
 /**
@@ -42,51 +35,37 @@ export function insertPhqScore(phqScore: PHQ9Score, dbFile: PathLike) {
  * @returns
  */
 export function getPhqScoreByUserId(userId: number, dbFile: PathLike) {
-  try {
-    const db = new DatabaseSync(dbFile);
-    if (
-      !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
-    db.exec("PRAGMA foreign_keys = ON;");
-
+  return withDB(dbFile, (db) => {
     const phqScore = db.prepare(
-      `SELECT * FROM phq_score_db WHERE userId = ${userId};`,
-    ).get();
+      `SELECT * FROM phq_score_db WHERE userId = ?;`,
+    ).get(userId);
+    if (!phqScore) return undefined;
     return {
-      id: Number(phqScore?.id!),
-      userId: Number(phqScore?.userId!),
-      timestamp: Number(phqScore?.timestamp!),
-      score: Number(phqScore?.score!),
-      severity: depressionSeverityStringToEnum(String(phqScore?.severity!)),
-      action: String(phqScore?.action!),
-      impactQuestionAnswer: String(phqScore?.impact!),
+      id: Number(phqScore.id),
+      userId: Number(phqScore.userId),
+      timestamp: Number(phqScore.timestamp),
+      score: Number(phqScore.score),
+      severity: depressionSeverityStringToEnum(String(phqScore.severity)),
+      action: String(phqScore.action),
+      impactQuestionAnswer: String(phqScore.impact),
     };
-  } catch (err) {
-    console.error(`Failed to retrieve user ${userId} PHQ-9 score: ${err}`);
-  }
+  });
 }
 
 export function getPhqScoreById(id: number, dbFile: PathLike) {
-  try {
-    const db = new DatabaseSync(dbFile);
-    if (
-      !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
-    db.exec("PRAGMA foreign_keys = ON;");
-
+  return withDB(dbFile, (db) => {
     const phqScore = db.prepare(
-      `SELECT * FROM phq_score_db WHERE id = ${id};`,
-    ).get();
+      `SELECT * FROM phq_score_db WHERE id = ?;`,
+    ).get(id);
+    if (!phqScore) return undefined;
     return {
-      id: Number(phqScore?.id!),
-      userId: Number(phqScore?.userId!),
-      timestamp: Number(phqScore?.timestamp!),
-      score: Number(phqScore?.score!),
-      severity: depressionSeverityStringToEnum(String(phqScore?.severity!)),
-      action: String(phqScore?.action!),
-      impactQuestionAnswer: String(phqScore?.impact!),
+      id: Number(phqScore.id),
+      userId: Number(phqScore.userId),
+      timestamp: Number(phqScore.timestamp),
+      score: Number(phqScore.score),
+      severity: depressionSeverityStringToEnum(String(phqScore.severity)),
+      action: String(phqScore.action),
+      impactQuestionAnswer: String(phqScore.impact),
     };
-  } catch (err) {
-    console.error(`Failed to retrieve PHQ-9 score ${id}: ${err}`);
-  }
+  });
 }

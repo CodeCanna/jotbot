@@ -1,10 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { GAD7Score } from "../types/types.ts";
 import { PathLike } from "node:fs";
-import { sqlFilePath } from "../constants/paths.ts";
 import { anxietySeverityStringToEnum } from "../utils/misc.ts";
-
-const sqlPath = `${sqlFilePath}/gad_score`;
 
 /**
  * Insert GAD-7 score into gad_score_db table
@@ -20,7 +17,7 @@ export function insertGadScore(score: GAD7Score, dbPath: PathLike) {
     if (
       !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
     ) {
-      throw new Error("JotBot Error: Databaes integrety check failed!");
+      throw new Error("JotBot Error: Database integrity check failed!");
     }
 
     queryResult = db.prepare(
@@ -60,35 +57,35 @@ export function insertGadScore(score: GAD7Score, dbPath: PathLike) {
  * @param dbPath
  * @returns
  */
-export function getGadScoreById(id: number, dbPath: PathLike): GAD7Score {
+export function getGadScoreById(id: number, dbPath: PathLike): GAD7Score | undefined {
   let gadScore;
   try {
     const db = new DatabaseSync(dbPath);
-    const query = Deno.readTextFileSync(`${sqlPath}/get_gad_score_by_id.sql`)
-      .replace("<ID>", id.toString()).trim();
     db.exec("PRAGMA foreign_keys = ON;");
     if (
       !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
     ) {
-      throw new Error("JotBot Error: Databaes integrety check failed!");
+      throw new Error("JotBot Error: Database integrity check failed!");
     }
 
-    gadScore = db.prepare(query).get();
+    gadScore = db.prepare(`SELECT * FROM gad_score_db WHERE id = ?;`).get(id);
+    if (!gadScore) return undefined;
+
     console.log(gadScore);
 
     db.close();
   } catch (err) {
-    console.error(`Failed to insert gad-7 score: ${err}`);
-    throw new Error(`Failed to insert GAD-7 score: ${err}`);
+    console.error(`Failed to get GAD-7 score ${id}: ${err}`);
+    throw new Error(`Failed to get GAD-7 score ${id}: ${err}`);
   }
   return {
-    id: Number(gadScore?.id),
-    userId: Number(gadScore?.userId),
-    timestamp: Number(gadScore?.timestamp),
-    score: Number(gadScore?.score),
-    severity: anxietySeverityStringToEnum(gadScore?.severity?.toString()!),
-    action: gadScore?.action?.toString()!,
-    impactQuestionAnswer: gadScore?.impactQuestionAnswer?.toString()!,
+    id: Number(gadScore.id),
+    userId: Number(gadScore.userId),
+    timestamp: Number(gadScore.timestamp),
+    score: Number(gadScore.score),
+    severity: anxietySeverityStringToEnum(gadScore.severity.toString()),
+    action: gadScore.action.toString(),
+    impactQuestionAnswer: gadScore.impactQuestionAnswer.toString(),
   };
 }
 

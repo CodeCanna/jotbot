@@ -17,7 +17,7 @@ export function insertEntry(entry: Entry, dbFile: PathLike) {
     .trim(); // Grab query from file
   if (
     !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
-  ) throw new Error("JotBot Error: Databaes integrety check failed!");
+  ) throw new Error("JotBot Error: Database integrity check failed!");
   db.exec("PRAGMA foreign_keys = ON;");
   const queryResult = db.prepare(query).run(
     entry.userId,
@@ -54,20 +54,28 @@ export function updateEntry(
 ) {
   try {
     const db = new DatabaseSync(dbFile);
-    const query = Deno.readTextFileSync(`${sqlFilePathEntry}/update_entry.sql`)
-      .replace("<ID>", updatedEntry.id!.toString()).trim();
     if (
       !(db.prepare("PRAGMA integrity_check(entry_db);").get()
         ?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
+    ) throw new Error("JotBot Error: Database integrity check failed!");
     db.exec("PRAGMA foreign_keys = ON;");
-    const queryResult = db.prepare(query).run(
+    const queryResult = db.prepare(
+      `UPDATE OR FAIL entry_db SET
+      lastEditedTimestamp = ?,
+      situation = ?,
+      automaticThoughts = ?,
+      emotionName = ?,
+      emotionEmoji = ?,
+      emotionDescription = ?
+      WHERE id = ?;`
+    ).run(
       updatedEntry.lastEditedTimestamp!,
       updatedEntry.situation!,
       updatedEntry.automaticThoughts!,
       updatedEntry.emotion.emotionName!,
       updatedEntry.emotion.emotionEmoji! || null,
       updatedEntry.emotion.emotionDescription!,
+      entryId,
     );
 
     if (queryResult.changes === 0) {
@@ -93,14 +101,12 @@ export function updateEntry(
 export function deleteEntryById(entryId: number, dbFile: PathLike) {
   try {
     const db = new DatabaseSync(dbFile);
-    const query = Deno.readTextFileSync(`${sqlFilePathEntry}/delete_entry.sql`)
-      .replace("<ID>", entryId.toString()).trim();
     if (
       !(db.prepare("PRAGMA integrity_check(entry_db);").get()
         ?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
+    ) throw new Error("JotBot Error: Database integrity check failed!");
     db.exec("PRAGMA foreign_keys = ON;");
-    const queryResult = db.prepare(query).run();
+    const queryResult = db.prepare(`DELETE FROM entry_db WHERE id = ?;`).run(entryId);
 
     if (queryResult.changes === 0) {
       throw new Error(
@@ -112,6 +118,7 @@ export function deleteEntryById(entryId: number, dbFile: PathLike) {
     return queryResult;
   } catch (err) {
     console.error(`Failed to delete entry ${entryId} from entry_db: ${err}`);
+    throw err;
   }
 }
 
@@ -120,37 +127,36 @@ export function deleteEntryById(entryId: number, dbFile: PathLike) {
  * @param dbFile PathLike - Path to the sqlite db file
  * @returns Entry
  */
-export function getEntryById(entryId: number, dbFile: PathLike): Entry {
+export function getEntryById(entryId: number, dbFile: PathLike): Entry | undefined {
   let queryResult: Record<string, SQLOutputValue> | undefined;
   try {
     const db = new DatabaseSync(dbFile);
-    const query = Deno.readTextFileSync(
-      `${sqlFilePathEntry}/get_entry_by_id.sql`,
-    ).replace("<ID>", entryId.toString()).trim();
     if (
       !(db.prepare("PRAGMA integrity_check(entry_db);").get()
         ?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
+    ) throw new Error("JotBot Error: Database integrity check failed!");
     db.exec("PRAGMA foreign_keys = ON;");
-    queryResult = db.prepare(query).get();
+    queryResult = db.prepare(`SELECT * FROM entry_db WHERE id = ?;`).get(entryId);
+    if (!queryResult) return undefined;
     db.close();
   } catch (err) {
     console.error(`Failed to retrieve entry: ${entryId}: ${err}`);
+    throw err;
   }
 
   return {
-    id: Number(queryResult?.id!),
-    userId: Number(queryResult?.userId!),
-    timestamp: Number(queryResult?.timestamp!),
-    lastEditedTimestamp: Number(queryResult?.lastEditedTimestamp!) || null,
-    situation: String(queryResult?.situation!),
-    automaticThoughts: String(queryResult?.automaticThoughts!),
+    id: Number(queryResult.id),
+    userId: Number(queryResult.userId),
+    timestamp: Number(queryResult.timestamp),
+    lastEditedTimestamp: Number(queryResult.lastEditedTimestamp) || null,
+    situation: String(queryResult.situation),
+    automaticThoughts: String(queryResult.automaticThoughts),
     emotion: {
-      emotionName: String(queryResult?.emotionName!),
-      emotionEmoji: String(queryResult?.emotionEmoji!),
-      emotionDescription: String(queryResult?.emotionDescription!),
+      emotionName: String(queryResult.emotionName),
+      emotionEmoji: String(queryResult.emotionEmoji),
+      emotionDescription: String(queryResult.emotionDescription),
     },
-    selfiePath: queryResult?.selfiePath?.toString() || null,
+    selfiePath: queryResult.selfiePath?.toString() || null,
   };
 }
 
@@ -167,27 +173,24 @@ export function getAllEntriesByUserId(
   const entries = [];
   try {
     const db = new DatabaseSync(dbFile);
-    const query = Deno.readTextFileSync(
-      `${sqlFilePathEntry}/get_all_entries_by_id.sql`,
-    ).replace("<ID>", userId.toString()).trim();
     if (
       !(db.prepare("PRAGMA integrity_check;").get()?.integrity_check === "ok")
-    ) throw new Error("JotBot Error: Databaes integrety check failed!");
-    const queryResults = db.prepare(query).all();
-    for (const e in queryResults) {
+    ) throw new Error("JotBot Error: Database integrity check failed!");
+    const queryResults = db.prepare(`SELECT * FROM entry_db WHERE userId = ? ORDER BY timestamp DESC;`).all(userId);
+    for (const result of queryResults) {
       const entry: Entry = {
-        id: Number(queryResults[e].id!),
-        userId: Number(queryResults[e].userId!),
-        timestamp: Number(queryResults[e].timestamp!),
-        lastEditedTimestamp: Number(queryResults[e].lastEditedTimestamp!),
-        situation: queryResults[e].situation?.toString()!,
-        automaticThoughts: queryResults[e].automaticThoughts?.toString()!,
+        id: Number(result.id),
+        userId: Number(result.userId),
+        timestamp: Number(result.timestamp),
+        lastEditedTimestamp: Number(result.lastEditedTimestamp),
+        situation: result.situation?.toString() || "",
+        automaticThoughts: result.automaticThoughts?.toString() || "",
         emotion: {
-          emotionName: queryResults[e].emotionName?.toString()!,
-          emotionEmoji: queryResults[e].emotionEmoji?.toString()!,
-          emotionDescription: queryResults[e].emotionDescription?.toString()!,
+          emotionName: result.emotionName?.toString() || "",
+          emotionEmoji: result.emotionEmoji?.toString() || "",
+          emotionDescription: result.emotionDescription?.toString() || "",
         },
-        selfiePath: queryResults[e].selfiePath?.toString()!,
+        selfiePath: result.selfiePath?.toString() || null,
       };
 
       entries.push(entry);
@@ -197,6 +200,7 @@ export function getAllEntriesByUserId(
     console.error(
       `Jotbot Error: Failed retrieving all entries for user ${userId}: ${err}`,
     );
+    throw err;
   }
   return entries;
 }

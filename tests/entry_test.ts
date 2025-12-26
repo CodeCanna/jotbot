@@ -110,6 +110,7 @@ Deno.test("Test getEntryById()", () => {
 
   // Get entry by id
   const entry = getEntryById(1, testDbFile);
+  if (!entry) throw new Error("Expected entry to be defined");
 
   assertObjectMatch(testEntry, entry);
 

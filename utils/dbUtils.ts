@@ -2,9 +2,12 @@ import { PathLike } from "node:fs";
 import {
   createEntryTable,
   createGadScoreTable,
+  createJournalEntryPhotosTable,
+  createJournalTable,
   createPhqScoreTable,
   createSettingsTable,
   createUserTable,
+  createVoiceRecordingTable,
 } from "../db/migration.ts";
 import { DatabaseSync } from "node:sqlite";
 
@@ -18,6 +21,9 @@ export function createDatabase(dbFile: PathLike) {
     createPhqScoreTable(dbFile);
     createEntryTable(dbFile);
     createSettingsTable(dbFile);
+    createJournalTable(dbFile);
+    createJournalEntryPhotosTable(dbFile);
+    createVoiceRecordingTable(dbFile);
   } catch (err) {
     console.error(err);
     throw new Error(`Failed to create database: ${err}`);
@@ -42,5 +48,5 @@ export function getLatestId(
   } catch (err) {
     console.error(`Failed to retrieve latest id from ${tableName}: ${err}`);
   }
-  return Number(id?.seq);
+  return Number(id?.max_id) || 0;
 }
