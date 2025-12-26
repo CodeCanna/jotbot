@@ -6,12 +6,13 @@ import { telegramDownloadUrl } from "../constants/strings.ts";
 import { dbFile } from "../constants/paths.ts";
 
 export async function new_entry(conversation: Conversation, ctx: Context) {
-  // Describe situation
-  await ctx.api.sendMessage(
-    ctx.chatId!,
-    "📝 <b>Step 1: Describe the Situation</b>\n\nDescribe the situation that brought up your thought.\n\n<i>Example: \"I was at work and my boss criticized my presentation.\"</i>",
-    { parse_mode: "HTML" },
-  );
+  try {
+    // Describe situation
+    await ctx.api.sendMessage(
+      ctx.chatId!,
+      "📝 <b>Step 1: Describe the Situation</b>\n\nDescribe the situation that brought up your thought.\n\n<i>Example: \"I was at work and my boss criticized my presentation.\"</i>",
+      { parse_mode: "HTML" },
+    );
   const situationCtx = await conversation.waitFor("message:text");
 
   // Record automatic thoughts
@@ -129,9 +130,18 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
     return await ctx.reply(`Failed to insert entry: ${err}`);
   }
 
-  return await ctx.reply(
-    `Entry added at ${
-      new Date(entry.timestamp!).toLocaleString()
-    }!  Thank you for logging your emotion with me.`,
-  );
+    return await ctx.reply(
+      `Entry added at ${
+        new Date(entry.timestamp!).toLocaleString()
+      }!  Thank you for logging your emotion with me.`,
+    );
+  } catch (error) {
+    console.error(`Error in new_entry conversation for user ${ctx.from?.id}:`, error);
+    try {
+      await ctx.reply("❌ Sorry, there was an error creating your entry. Please try again with /new_entry.");
+    } catch (replyError) {
+      console.error(`Failed to send error message: ${replyError}`);
+    }
+    // Don't rethrow - let the conversation end gracefully
+  }
 }

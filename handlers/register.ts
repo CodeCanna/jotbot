@@ -5,7 +5,8 @@ import { User } from "../types/types.ts";
 import { dbFile } from "../constants/paths.ts";
 
 export async function register(conversation: Conversation, ctx: Context) {
-  let dob;
+  try {
+    let dob;
   try {
     while (true) {
       await ctx.editMessageText(
@@ -20,10 +21,11 @@ export async function register(conversation: Conversation, ctx: Context) {
         break;
       }
     }
-  } catch (err) {
-    await ctx.reply(`Failed to save birthdate: ${err}`);
-    throw new Error(`Failed to save birthdate: ${err}`);
-  }
+   } catch (err) {
+     console.error(`Error getting DOB for user ${ctx.from?.id}:`, err);
+     await ctx.reply("❌ Sorry, there was an error processing your date of birth. Please try registering again with /start.");
+     return; // End conversation gracefully
+   }
 
   const user: User = {
     telegramId: ctx.from?.id!,
@@ -41,8 +43,16 @@ export async function register(conversation: Conversation, ctx: Context) {
     ctx.reply(`Failed to save user ${user.username}: ${err}`);
     console.log(`Error inserting user ${user.username}: ${err}`);
   }
-  ctx.reply(
-    `Welcome ${user.username}!  You have been successfully registered.  Would you like to start by recording an entry?`,
-    { reply_markup: new InlineKeyboard().text("New Entry", "new-entry") },
-  );
+    await ctx.reply(
+      `Welcome ${user.username}!  You have been successfully registered.  Would you like to start by recording an entry?`,
+      { reply_markup: new InlineKeyboard().text("New Entry", "new-entry") },
+    );
+  } catch (error) {
+    console.error(`Error in register conversation for user ${ctx.from?.id}:`, error);
+    try {
+      await ctx.reply("❌ Sorry, there was an error during registration. Please try again with /start.");
+    } catch (replyError) {
+      console.error(`Failed to send error message: ${replyError}`);
+    }
+  }
 }
