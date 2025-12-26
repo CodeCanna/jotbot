@@ -1,4 +1,3 @@
-import { PathLike } from "node:fs";
 import {
   addCustom404Column,
   createEntryTable,
@@ -11,12 +10,18 @@ import {
   createVoiceRecordingTable,
 } from "../db/migration.ts";
 import { DatabaseSync } from "node:sqlite";
+import { PathLike } from "node:fs";
 
 /**
  * @param dbFile
  */
 export function createDatabase(dbFile: PathLike) {
   try {
+    // Create an empty database file first to ensure it exists
+    const db = new DatabaseSync(dbFile);
+    db.close();
+
+    // Now create all tables
     createUserTable(dbFile);
     createGadScoreTable(dbFile);
     createPhqScoreTable(dbFile);
