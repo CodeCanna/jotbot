@@ -7,6 +7,7 @@ import { dbFile } from "../constants/paths.ts";
 export async function set_404_image(conversation: Conversation, ctx: Context) {
   await ctx.reply(
     "🖼️ <b>Set Custom 404 Image</b>\n\nSend me an image that will be shown when viewing journal entries that don't have selfies.\n\n<i>This image will be displayed as a placeholder for entries without photos.</i>\n\nSend the image now:",
+    { parse_mode: "HTML" },
   );
 
   const photoCtx = await conversation.waitFor("message:photo");
