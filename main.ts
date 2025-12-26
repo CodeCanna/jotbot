@@ -1,4 +1,4 @@
-import { Bot, Context, InlineKeyboard, InlineQueryResultBuilder } from "grammy";
+import { Bot, Context, InlineQueryResultBuilder } from "grammy";
 import { load } from "@std/dotenv";
 import {
   type ConversationFlavor,
@@ -34,10 +34,9 @@ import { new_journal_entry } from "./handlers/new_journal_entry.ts";
 import { set_404_image } from "./handlers/set_404_image.ts";
 import { dbFile } from "./constants/paths.ts";
 import { createDatabase, getLatestId } from "./utils/dbUtils.ts";
-import { getSettingsById, updateCustom404Image, updateSettings } from "./models/settings.ts";
+import { getSettingsById, updateSettings } from "./models/settings.ts";
 import { getPhqScoreById } from "./models/phq9_score.ts";
 import { getGadScoreById } from "./models/gad7_score.ts";
-import { telegramDownloadUrl } from "./constants/strings.ts";
 
 if (import.meta.main) {
   // Check if database is present and if not create one

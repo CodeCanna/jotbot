@@ -118,7 +118,7 @@ export function addCustom404Column(dbFile: PathLike) {
     db.exec("PRAGMA foreign_keys = ON;");
     // Check if column exists to avoid errors
     const columns = db.prepare("PRAGMA table_info(settings_db);").all();
-    const hasColumn = columns.some((col: any) => col.name === "custom404ImagePath");
+    const hasColumn = columns.some((col: { name: string }) => col.name === "custom404ImagePath");
     if (!hasColumn) {
       db.prepare(`
         ALTER TABLE settings_db
