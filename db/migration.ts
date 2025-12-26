@@ -111,3 +111,23 @@ export function createVoiceRecordingTable(dbFile: PathLike) {
     console.error(`Failed to create settings table: ${err}`);
   }
 }
+
+export function addCustom404Column(dbFile: PathLike) {
+  try {
+    const db = new DatabaseSync(dbFile);
+    db.exec("PRAGMA foreign_keys = ON;");
+    // Check if column exists to avoid errors
+    const columns = db.prepare("PRAGMA table_info(settings_db);").all();
+    const hasColumn = columns.some((col: any) => col.name === "custom404ImagePath");
+    if (!hasColumn) {
+      db.prepare(`
+        ALTER TABLE settings_db
+        ADD COLUMN custom404ImagePath TEXT DEFAULT NULL;
+      `).run();
+      console.log("Added custom404ImagePath column to settings_db");
+    }
+    db.close();
+  } catch (err) {
+    console.error(`Failed to add custom404ImagePath column: ${err}`);
+  }
+}

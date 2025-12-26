@@ -68,6 +68,7 @@ export type Settings = {
   id?: number;
   userId: number;
   storeMentalHealthInfo: boolean;
+  custom404ImagePath?: string | null;
 };
 
 export type JournalEntryPhoto = {
