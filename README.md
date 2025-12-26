@@ -36,8 +36,6 @@ depression!
 
 **/🆘** or **/sos** - Show the crisis help lines
 
-**NOTE**: The selfie features aren't working right now.
-
 ## Starting a new entry
 
 To start a new entry run the `/new_entry` command, and simply answer the follow
