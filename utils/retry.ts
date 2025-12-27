@@ -117,7 +117,10 @@ export const retryConditions = {
     if (err?.error_code === 429) { // Rate limit
       return true;
     }
-    if (err?.error_code !== undefined && err.error_code >= 500 && err.error_code < 600) { // Server errors
+    if (
+      err?.error_code !== undefined && err.error_code >= 500 &&
+      err.error_code < 600
+    ) { // Server errors
       return true;
     }
     return retryConditions.network(error);

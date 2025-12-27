@@ -95,7 +95,9 @@ export function getGadScoreById(
     userId: Number(gadScoreData.userId),
     timestamp: Number(gadScoreData.timestamp),
     score: Number(gadScoreData.score),
-    severity: anxietySeverityStringToEnum(gadScoreData.severity?.toString() ?? ""),
+    severity: anxietySeverityStringToEnum(
+      gadScoreData.severity?.toString() ?? "",
+    ),
     action: gadScoreData.action?.toString() ?? "",
     impactQuestionAnswer: gadScoreData.impactQuestionAnswer?.toString() ?? "",
   };

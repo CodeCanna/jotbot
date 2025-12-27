@@ -145,9 +145,7 @@ Deno.test("Test addCustom404Column()", () => {
   const columns = db.prepare("PRAGMA table_info(settings_db);").all() as {
     name: string;
   }[];
-  const hasColumn = columns.some((col) =>
-    col.name === "custom404ImagePath"
-  );
+  const hasColumn = columns.some((col) => col.name === "custom404ImagePath");
 
   assertEquals(hasColumn, true);
   Deno.removeSync(testDbPath);

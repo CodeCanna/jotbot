@@ -120,9 +120,7 @@ export function addCustom404Column(dbFile: PathLike) {
     const columns = db.prepare("PRAGMA table_info(settings_db);").all() as {
       name: string;
     }[];
-    const hasColumn = columns.some((col) =>
-      col.name === "custom404ImagePath"
-    );
+    const hasColumn = columns.some((col) => col.name === "custom404ImagePath");
     if (!hasColumn) {
       db.prepare(`
         ALTER TABLE settings_db
