@@ -1,9 +1,4 @@
-import {
-  ConsoleHandler,
-  getLogger,
-  type LevelName,
-  setup,
-} from "@std/log";
+import { ConsoleHandler, getLogger, type LevelName, setup } from "@std/log";
 
 const LOG_LEVEL: LevelName = (
   Deno.env.get("LOG_LEVEL") || "INFO"
