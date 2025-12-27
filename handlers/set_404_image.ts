@@ -3,7 +3,6 @@ import { Conversation } from "@grammyjs/conversations";
 import { updateCustom404Image } from "../models/settings.ts";
 import { getTelegramDownloadUrl } from "../constants/strings.ts";
 import { dbFile } from "../constants/paths.ts";
-import { MAX_FILE_SIZE_BYTES } from "../constants/numbers.ts";
 import { logger } from "../utils/logger.ts";
 
 export async function set_404_image(conversation: Conversation, ctx: Context) {
@@ -52,37 +51,9 @@ export async function set_404_image(conversation: Conversation, ctx: Context) {
     return;
   }
 
-  const photo = photoCtx.message.photo[photoCtx.message.photo.length - 1]; // Get largest
-  logger.debug(
-    `Selected largest photo: file_id=${photo.file_id}, size=${photo.file_size}`,
-  );
-
-  logger.debug(`Getting file info for ${photo.file_id}`);
-  let tmpFile;
-  try {
-    tmpFile = await ctx.api.getFile(photo.file_id);
-    logger.debug(
-      `File info received: path=${tmpFile.file_path}, size=${tmpFile.file_size}`,
-    );
-  } catch (error) {
-    logger.error(`Failed to get file info: ${error}`);
-    await ctx.reply(
-      "❌ Failed to process image. Please try uploading again.",
-    );
-    return;
-  }
-
-  if (tmpFile.file_size && tmpFile.file_size > 5_000_000) { // 5MB limit
-    logger.warn(`File too large: ${tmpFile.file_size} bytes`);
-    await ctx.reply(
-      "Image is too large (max 5MB). Please try a smaller image.",
-    );
-    return;
-  }
-
   // Extract relative file path from absolute server path
   // Telegram API expects paths like "photos/file_0.jpg", not "/var/lib/telegram-bot-api/.../photos/file_0.jpg"
-  let relativeFilePath = tmpFile.file_path!;
+  const relativeFilePath = tmpFile.file_path!;
   if (
     relativeFilePath.includes("/photos/") ||
     relativeFilePath.includes("/documents/") ||
@@ -95,7 +66,7 @@ export async function set_404_image(conversation: Conversation, ctx: Context) {
 
     const lastIndex = Math.max(photoIndex, docIndex, videoIndex);
     if (lastIndex !== -1) {
-      relativeFilePath = relativeFilePath.substring(lastIndex + 1); // Remove the leading slash
+      relativeFilePath.substring(lastIndex + 1);
     }
   }
 

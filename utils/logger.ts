@@ -3,7 +3,7 @@ import {
   getLogger,
   type LevelName,
   setup,
-} from "jsr:@std/log@0.224.14";
+} from "@std/log";
 
 const LOG_LEVEL: LevelName = (
   Deno.env.get("LOG_LEVEL") || "INFO"

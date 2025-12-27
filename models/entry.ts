@@ -1,4 +1,4 @@
-import { Entry, EntryContent } from "../types/types.ts";
+import { Entry } from "../types/types.ts";
 import { PathLike } from "node:fs";
 import { sqlFilePath } from "../constants/paths.ts";
 import { logger } from "../utils/logger.ts";

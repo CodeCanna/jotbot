@@ -96,7 +96,6 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
               (tmpFile.file_size / (1024 * 1024)).toFixed(2)
             }MB.`,
           );
-          continue;
         }
         const selfieResponse = await fetch(
           telegramDownloadUrl.replace("<token>", ctx.api.token).replace(

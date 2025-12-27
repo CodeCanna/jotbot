@@ -1,6 +1,5 @@
 import { JournalEntryPhoto } from "../types/types.ts";
 import { PathLike } from "node:fs";
-import { logger } from "../utils/logger.ts";
 import { withDB } from "../utils/dbHelper.ts";
 
 export function insertJournalEntryPhoto(
