@@ -1,7 +1,7 @@
 import { Conversation } from "@grammyjs/conversations";
 import { Context, InlineKeyboard } from "grammy";
 import { gad7Questions } from "../constants/strings.ts";
-import { keyboardFinal, questionaireKeyboard } from "../utils/keyboards.ts";
+import { keyboardFinal, questionnaireKeyboard } from "../utils/keyboards.ts";
 import {
   finalCallBackQueries,
   questionCallBackQueries,
@@ -17,17 +17,25 @@ export async function gad7_assessment(
   conversation: Conversation,
   ctx: Context,
 ) {
+  if (!ctx.from) {
+    await ctx.reply("Error: Unable to identify user.");
+    return;
+  }
+  if (!ctx.chatId) {
+    await ctx.reply("Error: Unable to identify chat.");
+    return;
+  }
   const ctxMsg = await ctx.api.sendMessage(
-    ctx.chatId!,
-    `Hello ${ctx.from?.username}, this is the <b><a href="https://en.wikipedia.org/wiki/GAD-7">Generalized Anxiety Disorder-7</a> (GAD-7)</b> this test was developed by a team of highly trained mental health professionals
+    ctx.chatId,
+    `Hello ${ctx.from.username}, this is the <b><a href="https://en.wikipedia.org/wiki/GAD-7">Generalized Anxiety Disorder-7</a> (GAD-7)</b> this test was developed by a team of highly trained mental health professionals
 
-With that said <b>THIS TEST DOES NOT REPLACE ACTUAL MENTAL HEALTH HELP!</b>  If are in serious need of mental health help you should <b>seek help immediatly</b>!
+With that said <b>THIS TEST DOES NOT REPLACE ACTUAL MENTAL HEALTH HELP!</b>  If are in serious need of mental health help you should <b>seek help immediately</b>!
 
 <b>Run /sos to bring up a list of resources that might be able to help</b>
 
-<a href="https://adaa.org/sites/default/files/GAD-7_Anxiety-updated_0.pdf">Click here</a> to see the PHQ-9 questionaire itself, this is where the questions are coming from.
+<a href="https://adaa.org/sites/default/files/GAD-7_Anxiety-updated_0.pdf">Click here</a> to see the GAD-7 questionnaire itself, this is where the questions are coming from.
 
-Do you understand that this test is a simple way to help you guage your depression for your own reference, and is in no way <b><u>ACTUAL</u></b> mental health services?
+Do you understand that this test is a simple way to help you gauge your anxiety for your own reference, and is in no way <b><u>ACTUAL</u></b> mental health services?
     `,
     {
       parse_mode: "HTML",
@@ -52,7 +60,7 @@ Do you understand that this test is a simple way to help you guage your depressi
   await ctx.api.editMessageText(
     ctx.chatId!,
     ctxMsg.message_id,
-    `Okay ${ctx.from?.username}, let's begin.  Over the <b><u>last 2 weeks</u></b> how often have you been bother by any of the following problems?`,
+    `Okay ${ctx.from.username}, let's begin.  Over the <b><u>last 2 weeks</u></b> how often have you been bother by any of the following problems?`,
     {
       parse_mode: "HTML",
       reply_markup: new InlineKeyboard().text("Begin", "gad7-begin"),
@@ -69,7 +77,7 @@ Do you understand that this test is a simple way to help you guage your depressi
       ctx.chatId!,
       ctxMsg.message_id,
       `<b>${Number(question) + 1}.</b> ${gad7Questions[question]}`,
-      { reply_markup: questionaireKeyboard, parse_mode: "HTML" },
+      { reply_markup: questionnaireKeyboard, parse_mode: "HTML" },
     );
     gad7Ctx = await conversation.waitForCallbackQuery(questionCallBackQueries);
     switch (gad7Ctx.callbackQuery.data) {
@@ -106,12 +114,12 @@ Do you understand that this test is a simple way to help you guage your depressi
   const impactQestionAnswer = gad7FinalCtx.callbackQuery.data;
   const gad7Score: GAD7Score = calcGad7Score(
     anxietyScore,
-    ctx.from?.id!,
+    ctx.from.id,
     impactQestionAnswer,
   );
 
   await ctx.api.editMessageText(
-    ctx.chatId!,
+    ctx.chatId,
     ctxMsg.message_id,
     `<b>GAD-7 Score:</b> ${gad7Score.score}
 <b>Anxiety Severity:</b> ${gad7Score.severity}
@@ -122,8 +130,8 @@ ${gad7Score.action}`,
     { parse_mode: "HTML" },
   );
 
-  if (userExists(ctx.from?.id!, dbFile)) {
-    const settings = getSettingsById(ctx.from?.id!, dbFile);
+  if (userExists(ctx.from.id, dbFile)) {
+    const settings = getSettingsById(ctx.from.id, dbFile);
 
     if (settings?.storeMentalHealthInfo) {
       try {

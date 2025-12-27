@@ -18,7 +18,7 @@ export function insertEntry(entry: Entry, dbFile: PathLike) {
       .trim();
     const queryResult = db.prepare(query).run(
       entry.userId,
-      entry.timestamp!,
+      entry.timestamp,
       entry.lastEditedTimestamp || null,
       entry.situation,
       entry.automaticThoughts,
@@ -59,12 +59,12 @@ export function updateEntry(
       emotionDescription = ?
       WHERE id = ?;`,
     ).run(
-      updatedEntry.lastEditedTimestamp!,
-      updatedEntry.situation!,
-      updatedEntry.automaticThoughts!,
-      updatedEntry.emotion.emotionName!,
-      updatedEntry.emotion.emotionEmoji! || null,
-      updatedEntry.emotion.emotionDescription!,
+      updatedEntry.lastEditedTimestamp ?? Date.now(),
+      updatedEntry.situation,
+      updatedEntry.automaticThoughts,
+      updatedEntry.emotion.emotionName,
+      updatedEntry.emotion.emotionEmoji || null,
+      updatedEntry.emotion.emotionDescription,
       entryId,
     );
 

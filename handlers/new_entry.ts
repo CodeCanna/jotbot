@@ -4,13 +4,22 @@ import { Emotion, Entry } from "../types/types.ts";
 import { insertEntry } from "../models/entry.ts";
 import { telegramDownloadUrl } from "../constants/strings.ts";
 import { dbFile } from "../constants/paths.ts";
+import { MAX_FILE_SIZE_BYTES } from "../constants/numbers.ts";
 import { logger } from "../utils/logger.ts";
 
 export async function new_entry(conversation: Conversation, ctx: Context) {
+  if (!ctx.from) {
+    await ctx.reply("Error: Unable to identify user.");
+    return;
+  }
+  if (!ctx.chatId) {
+    await ctx.reply("Error: Unable to identify chat.");
+    return;
+  }
   try {
     // Describe situation
     await ctx.api.sendMessage(
-      ctx.chatId!,
+      ctx.chatId,
       '📝 <b>Step 1: Describe the Situation</b>\n\nDescribe the situation that brought up your thought.\n\n<i>Example: "I was at work and my boss criticized my presentation."</i>',
       { parse_mode: "HTML" },
     );
@@ -71,17 +80,28 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
     if (selfieCtx.callbackQuery.data === "selfie-yes") {
       try {
         await ctx.api.editMessageText(
-          ctx.chatId!,
+          ctx.chatId,
           askSelfieMsg.message_id,
           "Send me a selfie.",
         );
         const selfiePathCtx = await conversation.waitFor("message:photo");
 
         const tmpFile = await selfiePathCtx.getFile();
+        if (!tmpFile.file_path) {
+          throw new Error("File path is missing from Telegram response");
+        }
+        if (tmpFile.file_size && tmpFile.file_size > MAX_FILE_SIZE_BYTES) {
+          await ctx.reply(
+            `❌ File too large! Maximum size is 10MB. Your file is ${
+              (tmpFile.file_size / (1024 * 1024)).toFixed(2)
+            }MB.`,
+          );
+          continue;
+        }
         const selfieResponse = await fetch(
           telegramDownloadUrl.replace("<token>", ctx.api.token).replace(
             "<file_path>",
-            tmpFile.file_path!,
+            tmpFile.file_path,
           ),
         );
         if (selfieResponse.body) {
@@ -98,7 +118,7 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
 
             logger.debug(`Saving selfie file: ${filePath}`);
             selfiePath = await Deno.realPath(filePath);
-            await selfieResponse.body!.pipeTo(file.writable);
+            await selfieResponse.body.pipeTo(file.writable);
           });
 
           await ctx.reply(`Selfie saved successfully!`);
@@ -116,7 +136,7 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
 
     const entry: Entry = {
       timestamp: await conversation.external(() => Date.now()),
-      userId: ctx.from?.id!,
+      userId: ctx.from.id,
       emotion: emotion,
       situation: situationCtx.message.text,
       automaticThoughts: automaticThoughtCtx.message.text,
@@ -132,7 +152,7 @@ export async function new_entry(conversation: Conversation, ctx: Context) {
 
     return await ctx.reply(
       `Entry added at ${
-        new Date(entry.timestamp!).toLocaleString()
+        new Date(entry.timestamp).toLocaleString()
       }!  Thank you for logging your emotion with me.`,
     );
   } catch (error) {

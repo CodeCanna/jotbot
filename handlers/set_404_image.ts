@@ -3,6 +3,7 @@ import { Conversation } from "@grammyjs/conversations";
 import { updateCustom404Image } from "../models/settings.ts";
 import { getTelegramDownloadUrl } from "../constants/strings.ts";
 import { dbFile } from "../constants/paths.ts";
+import { MAX_FILE_SIZE_BYTES } from "../constants/numbers.ts";
 import { logger } from "../utils/logger.ts";
 
 export async function set_404_image(conversation: Conversation, ctx: Context) {

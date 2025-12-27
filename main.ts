@@ -8,7 +8,6 @@ import {
 import { new_entry } from "./handlers/new_entry.ts";
 import { register } from "./handlers/register.ts";
 import { existsSync } from "node:fs";
-// import { createEntryTable, createUserTable } from "./db/migration.ts";
 import { userExists } from "./models/user.ts";
 import { deleteEntryById, getAllEntriesByUserId } from "./models/entry.ts";
 import { InlineQueryResult } from "grammy/types";
@@ -124,18 +123,23 @@ if (import.meta.main) {
 
   jotBotCommands.command("start", "Starts the bot.", async (ctx) => {
     // Check if user exists in Database
-    const userTelegramId = ctx.from?.id!;
+    if (!ctx.from) {
+      await ctx.reply("Error: Unable to identify user.");
+      return;
+    }
+    const userTelegramId = ctx.from.id;
+    const username = ctx.from.username || "User";
 
     if (!userExists(userTelegramId, dbFile)) {
       ctx.reply(
-        `Welcome ${ctx.from?.username}!  I can see you are a new user, would you like to register now?`,
+        `Welcome ${username}!  I can see you are a new user, would you like to register now?`,
         {
           reply_markup: registerKeyboard,
         },
       );
     } else {
       await ctx.reply(
-        `Hello ${ctx.from?.username} you have already completed the onboarding process.`,
+        `Hello ${username} you have already completed onboarding process.`,
         { reply_markup: mainCustomKeyboard },
       );
     }
@@ -166,9 +170,14 @@ if (import.meta.main) {
   });
 
   jotBotCommands.command("new_entry", "Create new entry", async (ctx) => {
-    if (!userExists(ctx.from?.id!, dbFile)) {
+    if (!ctx.from) {
+      await ctx.reply("Error: Unable to identify user.");
+      return;
+    }
+    const username = ctx.from.username || "User";
+    if (!userExists(ctx.from.id, dbFile)) {
       await ctx.reply(
-        `Hello ${ctx.from?.username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+        `Hello ${username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
         { reply_markup: registerKeyboard },
       );
     } else {
@@ -180,9 +189,14 @@ if (import.meta.main) {
     "new_journal_entry",
     "Create new journal entry",
     async (ctx) => {
-      if (!userExists(ctx.from?.id!, dbFile)) {
+      if (!ctx.from) {
+        await ctx.reply("Error: Unable to identify user.");
+        return;
+      }
+      const username = ctx.from.username || "User";
+      if (!userExists(ctx.from.id, dbFile)) {
         await ctx.reply(
-          `Hello ${ctx.from?.username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+          `Hello ${username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
           { reply_markup: registerKeyboard },
         );
       } else {
@@ -195,9 +209,14 @@ if (import.meta.main) {
     "view_entries",
     "View current entries.",
     async (ctx) => {
-      if (!userExists(ctx.from?.id!, dbFile)) {
+      if (!ctx.from) {
+        await ctx.reply("Error: Unable to identify user.");
+        return;
+      }
+      const username = ctx.from.username || "User";
+      if (!userExists(ctx.from.id, dbFile)) {
         await ctx.reply(
-          `Hello ${ctx.from?.username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+          `Hello ${username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
           { reply_markup: registerKeyboard },
         );
       } else {
@@ -226,12 +245,16 @@ if (import.meta.main) {
     "delete_entry",
     "Delete specific entry",
     async (ctx) => {
+      if (!ctx.message?.text) {
+        await ctx.reply("Error: No message text found.");
+        return;
+      }
       let entryId: number = 0;
-      if (ctx.message!.text.split(" ").length < 2) {
+      if (ctx.message.text.split(" ").length < 2) {
         await ctx.reply("Journal ID Not found.");
         return;
       } else {
-        entryId = Number(ctx.message!.text.split(" ")[1]);
+        entryId = Number(ctx.message.text.split(" ")[1]);
       }
 
       deleteEntryById(entryId, dbFile);
@@ -242,7 +265,8 @@ if (import.meta.main) {
     /(🆘|(?:sos))/, // ?: matches upper or lower case so no matter how sos is typed it will recognize it.
     "Show helplines and other crisis information.",
     async (ctx) => {
-      await ctx.reply(crisisString.replace("<username>", ctx.from?.username!), {
+      const username = ctx.from?.username ?? "User";
+      await ctx.reply(crisisString.replace("<username>", username), {
         parse_mode: "HTML",
       });
     },
@@ -281,19 +305,20 @@ if (import.meta.main) {
       // const lastAnxietyScore = getGad;
       await ctx.reply(
         `<b><u>Mental Health Overview</u></b>
-This is an overview of your mental health based on your answers to the GAD-7 and PHQ-9 questionaires.  
+This is an overview of your mental health based on your answers to the GAD-7 and PHQ-9 questionnaires.
 This snap shot only shows the last score.
 
 <b>THIS IS NOT A MEDICAL OR PSYCIATRIC DIAGNOSIS!!</b> 
   
 Only a trained mental health professional can diagnose actual mental illness.  This is meant to be a personal reference so you may seek help if you feel you need it.
 
-<b><u>Depression Overview</u></b>
-<b>Last Taken</b> ${
-          new Date(lastDepressionScore?.timestamp!).toLocaleString() ||
-          "No data"
+        <b><u>Depression Overview</u></b>
+        <b>Last Taken</b> ${
+          lastDepressionScore
+            ? new Date(lastDepressionScore.timestamp).toLocaleString()
+            : "No data"
         }
-<b>Last PHQ-9 Score</b> ${lastDepressionScore?.score || "No Data"}
+        <b>Last PHQ-9 Score</b> ${lastDepressionScore?.score || "No Data"}
 <b>Depression Severity</b> ${
           lastDepressionScore?.severity.toString() || "No data"
         }
@@ -303,14 +328,16 @@ Only a trained mental health professional can diagnose actual mental illness.  T
 <b><u>Description</u></b>
 ${lastDepressionScore?.action || "No data"}
 
-<b><u>Anxietey Overview</u></b>
-<b>Last Taken</b> ${
-          new Date(lastAnxietyScore?.timestamp).toLocaleString() || "No Data"
+ <b><u>Anxiety Overview</u></b>
+ <b>Last Taken</b> ${
+          lastAnxietyScore?.timestamp
+            ? new Date(lastAnxietyScore.timestamp).toLocaleString()
+            : "No Data"
         }
-<b>Last GAD-7 Score</b> ${lastAnxietyScore?.score || "No Data"}
-<b>Anxiety Severity ${lastAnxietyScore?.severity || "No data"}</b>
-<b>Anxiety impact on my life</b> ${
-          lastAnxietyScore.impactQuestionAnswer || "No data"
+ <b>Last GAD-7 Score</b> ${lastAnxietyScore?.score || "No Data"}
+ <b>Anxiety Severity ${lastAnxietyScore?.severity || "No data"}</b>
+ <b>Anxiety impact on my life</b> ${
+          lastAnxietyScore?.impactQuestionAnswer || "No data"
         }
 <b><u>Anxiety Description</u></b>
 ${lastAnxietyScore?.action || "No data"}`,
@@ -323,22 +350,24 @@ ${lastAnxietyScore?.action || "No data"}`,
     const entries = getAllEntriesByUserId(ctx.inlineQuery.from.id, dbFile);
     const entriesInlineQueryResults: InlineQueryResult[] = [];
     for (const entry in entries) {
-      const entryDate = new Date(entries[entry].timestamp!);
+      const entryDate = entries[entry].timestamp
+        ? new Date(entries[entry].timestamp)
+        : new Date(0);
       // Build string
       const entryString = `
-Date ${entryDate.toLocaleString()}
-<b><u>Emotion</u></b>
-${entries[entry].emotion.emotionName} ${entries[entry].emotion.emotionEmoji}
+ Date ${entryDate.toLocaleString()}
+ <b><u>Emotion</u></b>
+ ${entries[entry].emotion.emotionName} ${entries[entry].emotion.emotionEmoji}
 
-<b><u>Emotion Description</u></b>
-${entries[entry].emotion.emotionDescription}
+ <b><u>Emotion Description</u></b>
+ ${entries[entry].emotion.emotionDescription}
 
-<b><u>Situation</u></b>
-${entries[entry].situation}
+ <b><u>Situation</u></b>
+ ${entries[entry].situation}
 
-<b><u>Automatic Thoughts</u></b>
-${entries[entry].automaticThoughts}
-`;
+ <b><u>Automatic Thoughts</u></b>
+ ${entries[entry].automaticThoughts}
+ `;
       entriesInlineQueryResults.push(
         InlineQueryResultBuilder.article(
           String(entries[entry].id),
@@ -366,9 +395,13 @@ ${entries[entry].automaticThoughts}
     async (ctx) => {
       switch (ctx.callbackQuery.data) {
         case "smhs": {
-          const settings = getSettingsById(ctx.from?.id!, dbFile);
+          if (!ctx.from) {
+            await ctx.reply("Error: Unable to identify user.");
+            return;
+          }
+          const settings = getSettingsById(ctx.from.id, dbFile);
           logger.debug(
-            `Retrieved settings for user ${ctx.from?.id}: ${
+            `Retrieved settings for user ${ctx.from.id}: ${
               JSON.stringify(settings)
             }`,
           );
@@ -382,7 +415,9 @@ ${entries[entry].automaticThoughts}
               },
             );
           } else {
-            settings!.storeMentalHealthInfo = true;
+            if (settings) {
+              settings.storeMentalHealthInfo = true;
+            }
             await ctx.editMessageText(
               `I <b>WILL</b> store your GAD-7 and PHQ-9 scores`,
               {
@@ -391,7 +426,9 @@ ${entries[entry].automaticThoughts}
               },
             );
           }
-          updateSettings(ctx.from?.id!, settings!, dbFile);
+          if (settings) {
+            updateSettings(ctx.from.id, settings, dbFile);
+          }
           break;
         }
         case "set-404-image": {

@@ -47,10 +47,10 @@ export function updateJournalEntry(
 ) {
   return withDB(dbFile, (db) => {
     const query = Deno.readTextFileSync(`${sqlPath}/update_journal_entry.sql`)
-      .replace("<ID>", journalEntry.id!.toString()).trim();
+      .replace("<ID>", (journalEntry.id ?? 0).toString()).trim();
 
     const queryResult = db.prepare(query).run(
-      journalEntry.lastEditedTimestamp!,
+      journalEntry.lastEditedTimestamp ?? Date.now(),
       journalEntry.content,
       journalEntry.length,
     );
