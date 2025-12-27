@@ -27,7 +27,10 @@ function isValidDate(input: string): { isValid: boolean; message?: string } {
     date.getFullYear() !== year || date.getMonth() + 1 !== month ||
     date.getDate() !== day
   ) {
-    return { isValid: false, message: "Invalid date. The date doesn't exist." };
+    return {
+      isValid: false,
+      message: "Invalid date. Please check your input and try again.",
+    };
   }
 
   const now = new Date();
@@ -49,7 +52,7 @@ function isValidDate(input: string): { isValid: boolean; message?: string } {
   if (date < minDate) {
     return {
       isValid: false,
-      message: "Date cannot be more than 120 years ago.",
+      message: "Date cannot be more than 120 years in the past.",
     };
   }
 

@@ -67,7 +67,7 @@ export async function set_404_image(conversation: Conversation, ctx: Context) {
   } catch (error) {
     logger.error(`Failed to get file info: ${error}`);
     await ctx.reply(
-      "❌ Failed to processs image. Please try uploading again.",
+      "❌ Failed to process image. Please try uploading again.",
     );
     return;
   }
