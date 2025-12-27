@@ -29,7 +29,10 @@ export function insertEntry(entry: Entry, dbFile: PathLike) {
     );
 
     if (queryResult.changes === 0) {
-      throw new Error(`Query ran but no changes were made.`);
+      logger.error(
+        `Failed to insert entry for user ${entry.userId}: No changes made`,
+      );
+      throw new Error("Failed to insert entry: Database returned no changes");
     }
 
     return queryResult;
@@ -69,7 +72,10 @@ export function updateEntry(
     );
 
     if (queryResult.changes === 0) {
-      throw new Error(`Query ran but no changes were made.`);
+      logger.error(`Failed to update entry ${entryId}: No changes made`);
+      throw new Error(
+        `Failed to update entry: Entry ID ${entryId} not found or no changes made`,
+      );
     }
 
     return queryResult;

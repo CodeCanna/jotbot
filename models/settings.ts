@@ -15,7 +15,12 @@ export function insertSettings(userId: number, dbFile: PathLike) {
     ).run(userId);
 
     if (queryResult.changes === 0) {
-      throw new Error("Insert failed: no changes made");
+      logger.error(
+        `Failed to insert settings for user ${userId}: No changes made`,
+      );
+      throw new Error(
+        `Failed to insert settings: User ID ${userId} - no changes made`,
+      );
     }
 
     return queryResult;
@@ -37,7 +42,12 @@ export function updateSettings(
     );
 
     if (queryResult.changes === 0) {
-      throw new Error("Update failed: no changes made");
+      logger.error(
+        `Failed to update settings for user ${userId}: No changes made`,
+      );
+      throw new Error(
+        `Failed to update settings: User ID ${userId} - no changes made`,
+      );
     }
 
     return queryResult;
@@ -75,28 +85,38 @@ export function updateCustom404Image(
   dbFile: PathLike,
 ) {
   return withDB(dbFile, (db) => {
-    // First, ensure settings exist for this user
     const existingSettings = db.prepare(
       `SELECT id FROM settings_db WHERE userId = ?`,
     ).get(userId);
 
     if (!existingSettings) {
-      // Create settings record if it doesn't exist
       logger.debug(`Creating new settings record for user ${userId}`);
       const insertResult = db.prepare(
         `INSERT INTO settings_db (userId, custom404ImagePath) VALUES (?, ?)`,
       ).run(userId, imagePath);
+      if (insertResult.changes === 0) {
+        logger.error(
+          `Failed to insert custom 404 image settings for user ${userId}: No changes made`,
+        );
+        throw new Error(
+          `Failed to insert settings: User ID ${userId} - no changes made`,
+        );
+      }
       return insertResult;
     }
 
-    // Update existing settings
-    logger.debug(`Updating existing settings for user ${userId}`);
+    logger.debug(`Updating custom 404 image for user ${userId}`);
     const queryResult = db.prepare(
       `UPDATE settings_db SET custom404ImagePath = ? WHERE userId = ?`,
     ).run(imagePath, userId);
 
     if (queryResult.changes === 0) {
-      throw new Error("Update failed: no changes made");
+      logger.error(
+        `Failed to update custom 404 image for user ${userId}: No changes made`,
+      );
+      throw new Error(
+        `Failed to update settings: User ID ${userId} - no changes made`,
+      );
     }
 
     return queryResult;

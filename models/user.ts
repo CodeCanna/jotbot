@@ -34,8 +34,8 @@ export function insertUser(user: User, dbPath: PathLike) {
 export function deleteUser(userTelegramId: number, dbFile: PathLike) {
   return withDB(dbFile, (db) => {
     const queryResult = db.prepare(
-      `DELETE FROM user_db WHERE telegramId = ${userTelegramId};`,
-    ).run();
+      `DELETE FROM user_db WHERE telegramId = ?;`,
+    ).run(userTelegramId);
 
     if (queryResult.changes === 0) {
       logger.warn(`No user found with ID ${userTelegramId} to delete`);
@@ -52,16 +52,9 @@ export function deleteUser(userTelegramId: number, dbFile: PathLike) {
  */
 export function userExists(userTelegramId: number, dbFile: PathLike): boolean {
   return withDB(dbFile, (db) => {
-    const user = db.prepare(
-      `SELECT EXISTS(SELECT 1 FROM user_db WHERE telegramId = '${userTelegramId}')`,
-    ).get();
-
-    for (const u in user) {
-      const value = Number(user[u]);
-      if (value === 1) {
-        return true;
-      }
-    }
-    return false;
+    const result = db.prepare(
+      `SELECT COUNT(*) as count FROM user_db WHERE telegramId = ?`,
+    ).get(userTelegramId) as { count: number };
+    return result.count > 0;
   });
 }
