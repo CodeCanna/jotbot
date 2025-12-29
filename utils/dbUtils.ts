@@ -1,4 +1,4 @@
-import { PathLike } from "node:fs";
+import { existsSync, PathLike } from "node:fs";
 import {
   createEntryTable,
   createGadScoreTable,
@@ -7,12 +7,19 @@ import {
   createUserTable,
 } from "../db/migration.ts";
 import { DatabaseSync } from "node:sqlite";
+import { dbFileBasePath, testDbFileBasePath } from "../constants/paths.ts";
 
 /**
  * @param dbFile
  */
 export function createDatabase(dbFile: PathLike) {
   try {
+    // Create db directory structure
+    if (!existsSync(dbFileBasePath)) {
+      Deno.mkdirSync(dbFileBasePath, { recursive: true });
+    }
+
+    // Create db
     createUserTable(dbFile);
     createGadScoreTable(dbFile);
     createPhqScoreTable(dbFile);
