@@ -39,7 +39,7 @@ export const mainKittyKeyboard: InlineKeyboard = new InlineKeyboard()
   .text("Inspirational 🐱", "inspiration-kitty").row()
   .text("Exit", "kitty-exit");
 
-export const questionnaireKeyboard: InlineKeyboard = new InlineKeyboard()
+export const questionaireKeyboard: InlineKeyboard = new InlineKeyboard()
   .text("Not at all", "not-at-all").row()
   .text("Several days", "several-days").row()
   .text("More than half the days", "more-than-half-the-days").row()
@@ -52,6 +52,5 @@ export const keyboardFinal: InlineKeyboard = new InlineKeyboard()
   .text("Extremely difficult");
 
 export const settingsKeyboard: InlineKeyboard = new InlineKeyboard()
-  .text("📊 Save Mental Health Scores", "smhs").row()
-  .text("🖼️ Set Custom 404 Image", "set-404-image").row()
-  .text("⬅️ Back", "settings-back");
+  .text("Save Mental Health Scores", "smhs").row()
+  .text("Back", "settings-back");

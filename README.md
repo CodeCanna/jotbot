@@ -17,14 +17,6 @@ entries. You can also delete entries from this screen. If you are wanting to
 stop using Jotbot you can delete your account using /delete_account this will
 also delete all of your journal entries!
 
-## Configuration
-
-The bot can be configured using environment variables in a `.env` file:
-
-- `TELEGRAM_BOT_KEY`: Your Telegram bot token (required)
-- `TELEGRAM_API_BASE_URL`: Custom Telegram Bot API base URL (optional, defaults
-  to `https://api.telegram.org`)
-
 ## Commands
 
 **/start** - Start the bot, if it's your first time messaging the bot you will

@@ -3,13 +3,8 @@ import { Conversation } from "@grammyjs/conversations";
 import { deleteAccountConfirmKeyboard } from "../utils/keyboards.ts";
 import { deleteUser } from "../models/user.ts";
 import { dbFile } from "../constants/paths.ts";
-import { logger } from "../utils/logger.ts";
 
 export async function delete_account(conversation: Conversation, ctx: Context) {
-  if (!ctx.from) {
-    await ctx.reply("Error: Unable to identify user.");
-    return;
-  }
   try {
     await ctx.reply(
       `⚠️ Are you sure you want to <b><u>delete</u></b> your account <b>along with all of your data</b>? ⚠️`,
@@ -22,21 +17,21 @@ export async function delete_account(conversation: Conversation, ctx: Context) {
     ]);
 
     if (deleteAccountCtx.callbackQuery.data === "delete-account-yes") {
-      await conversation.external(() => deleteUser(ctx.from.id, dbFile));
+      await conversation.external(() => deleteUser(ctx.from?.id!, dbFile));
     } else if (deleteAccountCtx.callbackQuery.data === "delete-account-no") {
       conversation.halt();
       return await deleteAccountCtx.editMessageText("No changes made!");
     }
     await conversation.halt();
     return await ctx.editMessageText(
-      `Okay ${ctx.from.username} your account has been terminated along with all of your entries.  Thanks for trying Jotbot!`,
+      `Okay ${ctx.from?.username} your account has been terminated along with all of your entries.  Thanks for trying Jotbot!`,
     );
   } catch (err) {
-    logger.error(
-      `Failed to delete user ${ctx.from.username}: ${err}`,
+    console.log(
+      `Failed to delete user ${ctx.from?.username}: ${err}`,
     );
     return await ctx.editMessageText(
-      `Failed to delete user ${ctx.from.username}: ${err}`,
+      `Failed to delete user ${ctx.from?.username}: ${err}`,
     );
   }
 }

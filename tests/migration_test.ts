@@ -1,6 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
 import {
-  addCustom404Column,
   createEntryTable,
   createGadScoreTable,
   createJournalEntryPhotosTable,
@@ -130,23 +129,5 @@ Deno.test("Test createVoiceRecordingTable()", () => {
 
   assertNotEquals(table, undefined);
   assertEquals(table?.name, "voice_recording_db");
-  Deno.removeSync(testDbPath);
-});
-
-Deno.test("Test addCustom404Column()", () => {
-  // First create the settings table
-  createSettingsTable(testDbPath);
-
-  // Add the column
-  addCustom404Column(testDbPath);
-
-  // Verify the column exists
-  const db = new DatabaseSync(testDbPath);
-  const columns = db.prepare("PRAGMA table_info(settings_db);").all() as {
-    name: string;
-  }[];
-  const hasColumn = columns.some((col) => col.name === "custom404ImagePath");
-
-  assertEquals(hasColumn, true);
   Deno.removeSync(testDbPath);
 });

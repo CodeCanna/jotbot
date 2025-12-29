@@ -4,7 +4,6 @@ import { createSettingsTable, createUserTable } from "../db/migration.ts";
 import {
   getSettingsById,
   insertSettings,
-  updateCustom404Image,
   updateSettings,
 } from "../models/settings.ts";
 import { insertUser } from "../models/user.ts";
@@ -23,7 +22,6 @@ const testUser: User = {
 const testSettings: Settings = {
   userId: 12345,
   storeMentalHealthInfo: false,
-  custom404ImagePath: null,
 };
 
 Deno.test("Test insertSettings()", async () => {
@@ -69,27 +67,6 @@ Deno.test("Test updateSettings()", async () => {
 
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult?.lastInsertRowid, 0);
-
-  await Deno.removeSync(testDbFile);
-});
-
-Deno.test("Test updateCustom404Image()", async () => {
-  await createUserTable(testDbFile);
-  await createSettingsTable(testDbFile);
-  insertUser(testUser, testDbFile);
-  insertSettings(testUser.telegramId, testDbFile);
-
-  const customPath = "assets/404/12345_404.jpg";
-  const queryResult = updateCustom404Image(
-    testUser.telegramId,
-    customPath,
-    testDbFile,
-  );
-
-  assertEquals(queryResult?.changes, 1);
-
-  const updatedSettings = getSettingsById(testUser.telegramId, testDbFile);
-  assertEquals(updatedSettings?.custom404ImagePath, customPath);
 
   await Deno.removeSync(testDbFile);
 });
