@@ -9,8 +9,14 @@ import {
   insertEntry,
   updateEntry,
 } from "../models/entry.ts";
-import { testDbFile } from "../constants/paths.ts";
+import { testDbFile, testDbFileBasePath } from "../constants/paths.ts";
 import { assertObjectMatch } from "@std/assert/object-match";
+import { existsSync } from "node:fs";
+
+// Create test db directory structure
+if (!existsSync(testDbFileBasePath)) {
+  Deno.mkdirSync(testDbFileBasePath, { recursive: true });
+}
 
 // Create test entry
 const testEntry: Entry = {

@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert/equals";
-import { testDbFile } from "../constants/paths.ts";
+import { testDbFile, testDbFileBasePath } from "../constants/paths.ts";
 import { createSettingsTable, createUserTable } from "../db/migration.ts";
 import {
   getSettingsById,
@@ -10,6 +10,12 @@ import { insertUser } from "../models/user.ts";
 import { User } from "../types/types.ts";
 import { Settings } from "../types/types.ts";
 import { assertObjectMatch } from "@std/assert/object-match";
+import { existsSync } from "node:fs";
+
+// Create test db directory structure
+if (!existsSync(testDbFileBasePath)) {
+  Deno.mkdirSync(testDbFileBasePath, { recursive: true });
+}
 
 // Create test user
 const testUser: User = {

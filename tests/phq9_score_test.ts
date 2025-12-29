@@ -1,10 +1,16 @@
 import { assertEquals } from "@std/assert/equals";
-import { testDbFile } from "../constants/paths.ts";
+import { testDbFile, testDbFileBasePath } from "../constants/paths.ts";
 import { createPhqScoreTable, createUserTable } from "../db/migration.ts";
 import { getPhqScoreByUserId, insertPhqScore } from "../models/phq9_score.ts";
 import { insertUser } from "../models/user.ts";
 import { DepressionSeverity, PHQ9Score, User } from "../types/types.ts";
 import { assertObjectMatch } from "@std/assert/object-match";
+import { existsSync } from "node:fs";
+
+// Create test db directory structure
+if (!existsSync(testDbFileBasePath)) {
+  Deno.mkdirSync(testDbFileBasePath, { recursive: true });
+}
 
 // Create test user
 const testUser: User = {
