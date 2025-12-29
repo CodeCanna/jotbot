@@ -9,6 +9,6 @@ export async function view_journal_entries(
     reply_markup: new InlineKeyboard().text("Add beans"),
   });
 
-  const otherCtx = await conversation.wait();
-  await ctx.reply("Tits");
+  const _otherCtx = await conversation.wait();
+  await ctx.reply("Test");
 }
