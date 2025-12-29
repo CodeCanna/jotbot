@@ -3,7 +3,14 @@ import { getGadScoreById, insertGadScore } from "../models/gad7_score.ts";
 import { AnxietySeverity, GAD7Score, User } from "../types/types.ts";
 import { createGadScoreTable, createUserTable } from "../db/migration.ts";
 import { insertUser } from "../models/user.ts";
-import { testDbFile } from "../constants/paths.ts";
+import { testDbFile, testDbFileBasePath } from "../constants/paths.ts";
+import { existsSync } from "node:fs";
+
+// Create test db directory structure
+if (!existsSync(testDbFileBasePath)) {
+  Deno.mkdirSync(testDbFileBasePath, { recursive: true });
+}
+
 // Create test user
 const testUser: User = {
   telegramId: 12345,

@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert/equals";
-import { testDbFile } from "../constants/paths.ts";
+import { testDbFile, testDbFileBasePath } from "../constants/paths.ts";
 import {
   createJournalEntryPhotosTable,
   createJournalTable,
@@ -9,6 +9,12 @@ import { insertJournalEntry } from "../models/journal.ts";
 import { insertJournalEntryPhoto } from "../models/journal_entry_photo.ts";
 import { insertUser } from "../models/user.ts";
 import { JournalEntry, JournalEntryPhoto, User } from "../types/types.ts";
+import { existsSync } from "node:fs";
+
+// Create test db directory structure
+if (!existsSync(testDbFileBasePath)) {
+  Deno.mkdirSync(testDbFileBasePath, { recursive: true });
+}
 
 // Create test user
 const testUser: User = {

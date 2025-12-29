@@ -1,6 +1,13 @@
 import { assertEquals, assertObjectMatch } from "@std/assert";
 import { entryFromString, entryToString } from "../utils/misc.ts";
 import { Entry } from "../types/types.ts";
+import { testDbFileBasePath } from "../constants/paths.ts";
+import { existsSync } from "node:fs";
+
+// Create test db directory structure
+if (!existsSync(testDbFileBasePath)) {
+  Deno.mkdirSync(testDbFileBasePath, { recursive: true });
+}
 
 Deno.test("Test entryFromString()", () => {
   const testEntryString = `Page 1 of 15
