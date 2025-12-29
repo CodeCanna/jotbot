@@ -7,7 +7,7 @@ import {
   createUserTable,
 } from "../db/migration.ts";
 import { DatabaseSync } from "node:sqlite";
-import { dbFileBasePath, testDbFileBasePath } from "../constants/paths.ts";
+import { dbFileBasePath } from "../constants/paths.ts";
 
 /**
  * @param dbFile
