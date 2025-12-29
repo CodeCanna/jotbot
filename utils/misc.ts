@@ -9,10 +9,9 @@ import {
 import {
   anxietyExplanations,
   depressionExplanations,
-  getTelegramDownloadUrl,
+  telegramDownloadUrl,
 } from "../constants/strings.ts";
 import { File } from "grammy/types";
-import { logger } from "./logger.ts";
 
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -37,7 +36,7 @@ export function entryFromString(entryString: string): Entry {
     const emotionArr = emotion!.split(" ");
     const emotionName = emotionArr[0], emotionEmoji = emotionArr[1];
 
-    logger.debug(`Parsed emotion array: ${JSON.stringify(emotionArr)}`);
+    console.log(emotionArr);
 
     return {
       userId: 0,
@@ -56,17 +55,45 @@ export function entryFromString(entryString: string): Entry {
   }
 }
 
+// export async function dropOrphanedSelfies() {
+//   const entries = getAllEntriesByUserId();
+//   const selfiePaths: string[] = [];
+//   for (const entry in entries) {
+//     if (!entries[entry].selfiePath) continue;
+//     selfiePaths.push(entries[entry].selfiePath!);
+//   }
+
+//   const dateTimes: string[][] = [];
+//   for (const path in selfiePaths) {
+//     const date = selfiePaths[path].split("_")[1];
+//     const time = selfiePaths[path].split("_")[2];
+//     const dateTime = [];
+//     dateTime.push(date, time);
+//     dateTimes.push(dateTime);
+//   }
+
+//   const dateTimeStrings = [];
+//   for (const dateTime in dateTimes) {
+//     dateTimeStrings.push(new RegExp(dateTimes[dateTime].join("_")));
+//   }
+
+//   for await (const dirEntry of Deno.readDir("assets/selfies")) {
+//     for (const regex in dateTimeStrings) {
+//       if (!dateTimeStrings[regex].test(dirEntry.name)) {
+//         Deno.removeSync(`assets/selfies/${dirEntry.name}`);
+//       }
+//     }
+//   }
+// }
+
 export function entryToString(entry: Entry): string {
   let lastEditedString: string = "";
-  if (
-    entry.lastEditedTimestamp !== undefined &&
-    entry.lastEditedTimestamp !== null
-  ) {
+  if (entry.lastEditedTimestamp !== undefined) {
     lastEditedString = `<b>Last Edited</b> ${
-      new Date(entry.lastEditedTimestamp).toLocaleString()
+      new Date(entry.lastEditedTimestamp!).toLocaleString()
     }`;
   }
-  return `<b>Date Created</b> ${new Date(entry.timestamp).toLocaleString()}
+  return `<b>Date Created</b> ${new Date(entry.timestamp!).toLocaleString()}
 ${lastEditedString}
 <b><u>Emotion</u></b>
 ${entry.emotion.emotionName} ${entry.emotion.emotionEmoji || ""}
@@ -105,7 +132,7 @@ export function calcPhq9Score(
     depressionSeverity = DepressionSeverity.SEVERE;
     depressionExplanation = depressionExplanations.severe;
   } else {
-    logger.error("Depression Score out of bounds!");
+    console.log("Depression Score out of bounds!");
   }
 
   return {
@@ -139,7 +166,7 @@ export function calcGad7Score(
     anxietySeverity = AnxietySeverity.MODERATE_TO_SEVERE_ANXIETY;
     anxietyExplanation = anxietyExplanations.severe_anxiety;
   } else {
-    logger.error("Anxiety Score out of bounds!");
+    console.log("Depression Score out of bounds!");
   }
 
   return {
@@ -220,7 +247,6 @@ export async function downloadTelegramImage(
   caption: string,
   telegramFile: File,
   journalEntryId: number,
-  apiBaseUrl: string = "https://api.telegram.org",
 ): Promise<JournalEntryPhoto> {
   const journalEntryPhoto: JournalEntryPhoto = {
     journalEntryId: journalEntryId,
@@ -229,14 +255,14 @@ export async function downloadTelegramImage(
     fileSize: 0,
   };
   try {
-    if (!telegramFile.file_path) {
-      throw new Error("Telegram file path is missing");
-    }
     const selfieResponse = await fetch(
-      getTelegramDownloadUrl(apiBaseUrl, token, telegramFile.file_path),
+      telegramDownloadUrl.replace("<token>", token).replace(
+        "<file_path>",
+        telegramFile.file_path!,
+      ),
     );
 
-    journalEntryPhoto.fileSize = telegramFile.file_size ?? 0;
+    journalEntryPhoto.fileSize = telegramFile.file_size!;
     journalEntryPhoto.caption = caption;
 
     if (selfieResponse.body) {
@@ -252,9 +278,9 @@ export async function downloadTelegramImage(
 
       journalEntryPhoto.path = filePath;
 
-      logger.debug(`Saving file: ${filePath}`);
+      console.log(`File: ${file}`);
       journalEntryPhoto.path = await Deno.realPath(filePath);
-      await selfieResponse.body.pipeTo(file.writable);
+      await selfieResponse.body!.pipeTo(file.writable);
     }
   } catch (err) {
     throw err;

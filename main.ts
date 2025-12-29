@@ -1,5 +1,4 @@
 import { Bot, Context, InlineQueryResultBuilder } from "grammy";
-import { load } from "@std/dotenv";
 import {
   type ConversationFlavor,
   conversations,
@@ -8,6 +7,7 @@ import {
 import { new_entry } from "./handlers/new_entry.ts";
 import { register } from "./handlers/register.ts";
 import { existsSync } from "node:fs";
+// import { createEntryTable, createUserTable } from "./db/migration.ts";
 import { userExists } from "./models/user.ts";
 import { deleteEntryById, getAllEntriesByUserId } from "./models/entry.ts";
 import { InlineQueryResult } from "grammy/types";
@@ -28,10 +28,8 @@ import { view_entries } from "./handlers/view_entries.ts";
 import { crisisString, helpString } from "./constants/strings.ts";
 import { kitties } from "./handlers/kitties.ts";
 import { phq9_assessment } from "./handlers/phq9_assessment.ts";
-import { logger } from "./utils/logger.ts";
 import { gad7_assessment } from "./handlers/gad7_assessment.ts";
 import { new_journal_entry } from "./handlers/new_journal_entry.ts";
-import { set_404_image } from "./handlers/set_404_image.ts";
 import { dbFile } from "./constants/paths.ts";
 import { createDatabase, getLatestId } from "./utils/dbUtils.ts";
 import { getSettingsById, updateSettings } from "./models/settings.ts";
@@ -40,34 +38,18 @@ import { getGadScoreById } from "./models/gad7_score.ts";
 import { view_journal_entries } from "./handlers/view_journal_entries.ts";
 
 if (import.meta.main) {
-  // Load environment variables from .env file if present
-  await load({ export: true });
-
-  // Check for required environment variables
-  const botKey = Deno.env.get("TELEGRAM_BOT_KEY");
-  if (!botKey) {
-    logger.error(
-      "TELEGRAM_BOT_KEY environment variable is not set. Please set it in .env file or environment.",
-    );
-    Deno.exit(1);
-  }
-  logger.info("Bot key loaded successfully");
-
-  // Get optional Telegram API base URL
-  const apiBaseUrl = Deno.env.get("TELEGRAM_API_BASE_URL") ||
-    "https://api.telegram.org";
-  logger.info(`Using Telegram API base URL: ${apiBaseUrl}`);
+  // Check if database is present and if not create one
 
   // Check if db file exists if not create it and the tables
   if (!existsSync(dbFile)) {
     try {
-      logger.info("No Database Found creating a new database");
+      console.log("No Database Found creating a new database");
       createDatabase(dbFile);
     } catch (err) {
-      logger.error(`Failed to create database: ${err}`);
+      console.error(`Failed to created database: ${err}`);
     }
   } else {
-    logger.info("Database found! Starting bot.");
+    console.log("Database found!  Starting bot.");
   }
 
   // Check if selfie directory exists and create it if it doesn't
@@ -75,17 +57,7 @@ if (import.meta.main) {
     try {
       Deno.mkdir("assets/selfies");
     } catch (err) {
-      logger.error(`Failed to create selfie directory: ${err}`);
-      Deno.exit(1);
-    }
-  }
-
-  // Check if 404 images directory exists and create it if it doesn't
-  if (!existsSync("assets/404")) {
-    try {
-      Deno.mkdir("assets/404");
-    } catch (err) {
-      logger.error(`Failed to create 404 images directory: ${err}`);
+      console.error(`Failed to create selfie directory: ${err}`);
       Deno.exit(1);
     }
   }
@@ -98,11 +70,6 @@ if (import.meta.main) {
 
   const jotBot = new Bot<JotBotContext>(
     Deno.env.get("TELEGRAM_BOT_KEY") || "",
-    {
-      client: {
-        apiRoot: apiBaseUrl,
-      },
-    },
   );
   jotBot.api.config.use(hydrateFiles(jotBot.token));
   const jotBotCommands = new CommandGroup<JotBotContext>();
@@ -118,28 +85,22 @@ if (import.meta.main) {
   jotBot.use(createConversation(phq9_assessment));
   jotBot.use(createConversation(gad7_assessment));
   jotBot.use(createConversation(new_journal_entry));
-  jotBot.use(createConversation(set_404_image));
   jotBot.use(createConversation(view_journal_entries));
 
   jotBotCommands.command("start", "Starts the bot.", async (ctx) => {
     // Check if user exists in Database
-    if (!ctx.from) {
-      await ctx.reply("Error: Unable to identify user.");
-      return;
-    }
-    const userTelegramId = ctx.from.id;
-    const username = ctx.from.username || "User";
+    const userTelegramId = ctx.from?.id!;
 
     if (!userExists(userTelegramId, dbFile)) {
       ctx.reply(
-        `Welcome ${username}!  I can see you are a new user, would you like to register now?`,
+        `Welcome ${ctx.from?.username}!  I can see you are a new user, would you like to register now?`,
         {
           reply_markup: registerKeyboard,
         },
       );
     } else {
       await ctx.reply(
-        `Hello ${username} you have already completed onboarding process.`,
+        `Hello ${ctx.from?.username} you have already completed the onboarding process.`,
         { reply_markup: mainCustomKeyboard },
       );
     }
@@ -170,14 +131,9 @@ if (import.meta.main) {
   });
 
   jotBotCommands.command("new_entry", "Create new entry", async (ctx) => {
-    if (!ctx.from) {
-      await ctx.reply("Error: Unable to identify user.");
-      return;
-    }
-    const username = ctx.from.username || "User";
-    if (!userExists(ctx.from.id, dbFile)) {
+    if (!userExists(ctx.from?.id!, dbFile)) {
       await ctx.reply(
-        `Hello ${username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+        `Hello ${ctx.from?.username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
         { reply_markup: registerKeyboard },
       );
     } else {
@@ -189,14 +145,9 @@ if (import.meta.main) {
     "new_journal_entry",
     "Create new journal entry",
     async (ctx) => {
-      if (!ctx.from) {
-        await ctx.reply("Error: Unable to identify user.");
-        return;
-      }
-      const username = ctx.from.username || "User";
-      if (!userExists(ctx.from.id, dbFile)) {
+      if (!userExists(ctx.from?.id!, dbFile)) {
         await ctx.reply(
-          `Hello ${username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+          `Hello ${ctx.from?.username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
           { reply_markup: registerKeyboard },
         );
       } else {
@@ -209,14 +160,9 @@ if (import.meta.main) {
     "view_entries",
     "View current entries.",
     async (ctx) => {
-      if (!ctx.from) {
-        await ctx.reply("Error: Unable to identify user.");
-        return;
-      }
-      const username = ctx.from.username || "User";
-      if (!userExists(ctx.from.id, dbFile)) {
+      if (!userExists(ctx.from?.id!, dbFile)) {
         await ctx.reply(
-          `Hello ${username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
+          `Hello ${ctx.from?.username}!  It looks like you haven't completed the onboarding process yet.  Would you like to register to begin the registration process?`,
           { reply_markup: registerKeyboard },
         );
       } else {
@@ -245,16 +191,12 @@ if (import.meta.main) {
     "delete_entry",
     "Delete specific entry",
     async (ctx) => {
-      if (!ctx.message?.text) {
-        await ctx.reply("Error: No message text found.");
-        return;
-      }
       let entryId: number = 0;
-      if (ctx.message.text.split(" ").length < 2) {
+      if (ctx.message!.text.split(" ").length < 2) {
         await ctx.reply("Journal ID Not found.");
         return;
       } else {
-        entryId = Number(ctx.message.text.split(" ")[1]);
+        entryId = Number(ctx.message!.text.split(" ")[1]);
       }
 
       deleteEntryById(entryId, dbFile);
@@ -265,8 +207,7 @@ if (import.meta.main) {
     /(🆘|(?:sos))/, // ?: matches upper or lower case so no matter how sos is typed it will recognize it.
     "Show helplines and other crisis information.",
     async (ctx) => {
-      const username = ctx.from?.username ?? "User";
-      await ctx.reply(crisisString.replace("<username>", username), {
+      await ctx.reply(crisisString.replace("<username>", ctx.from?.username!), {
         parse_mode: "HTML",
       });
     },
@@ -305,20 +246,19 @@ if (import.meta.main) {
       // const lastAnxietyScore = getGad;
       await ctx.reply(
         `<b><u>Mental Health Overview</u></b>
-This is an overview of your mental health based on your answers to the GAD-7 and PHQ-9 questionnaires.
+This is an overview of your mental health based on your answers to the GAD-7 and PHQ-9 questionaires.  
 This snap shot only shows the last score.
 
 <b>THIS IS NOT A MEDICAL OR PSYCIATRIC DIAGNOSIS!!</b> 
   
 Only a trained mental health professional can diagnose actual mental illness.  This is meant to be a personal reference so you may seek help if you feel you need it.
 
-        <b><u>Depression Overview</u></b>
-        <b>Last Taken</b> ${
-          lastDepressionScore
-            ? new Date(lastDepressionScore.timestamp).toLocaleString()
-            : "No data"
+<b><u>Depression Overview</u></b>
+<b>Last Taken</b> ${
+          new Date(lastDepressionScore?.timestamp!).toLocaleString() ||
+          "No data"
         }
-        <b>Last PHQ-9 Score</b> ${lastDepressionScore?.score || "No Data"}
+<b>Last PHQ-9 Score</b> ${lastDepressionScore?.score || "No Data"}
 <b>Depression Severity</b> ${
           lastDepressionScore?.severity.toString() || "No data"
         }
@@ -328,16 +268,14 @@ Only a trained mental health professional can diagnose actual mental illness.  T
 <b><u>Description</u></b>
 ${lastDepressionScore?.action || "No data"}
 
- <b><u>Anxiety Overview</u></b>
- <b>Last Taken</b> ${
-          lastAnxietyScore?.timestamp
-            ? new Date(lastAnxietyScore.timestamp).toLocaleString()
-            : "No Data"
+<b><u>Anxietey Overview</u></b>
+<b>Last Taken</b> ${
+          new Date(lastAnxietyScore?.timestamp).toLocaleString() || "No Data"
         }
- <b>Last GAD-7 Score</b> ${lastAnxietyScore?.score || "No Data"}
- <b>Anxiety Severity ${lastAnxietyScore?.severity || "No data"}</b>
- <b>Anxiety impact on my life</b> ${
-          lastAnxietyScore?.impactQuestionAnswer || "No data"
+<b>Last GAD-7 Score</b> ${lastAnxietyScore?.score || "No Data"}
+<b>Anxiety Severity ${lastAnxietyScore?.severity || "No data"}</b>
+<b>Anxiety impact on my life</b> ${
+          lastAnxietyScore.impactQuestionAnswer || "No data"
         }
 <b><u>Anxiety Description</u></b>
 ${lastAnxietyScore?.action || "No data"}`,
@@ -350,24 +288,22 @@ ${lastAnxietyScore?.action || "No data"}`,
     const entries = getAllEntriesByUserId(ctx.inlineQuery.from.id, dbFile);
     const entriesInlineQueryResults: InlineQueryResult[] = [];
     for (const entry in entries) {
-      const entryDate = entries[entry].timestamp
-        ? new Date(entries[entry].timestamp)
-        : new Date(0);
+      const entryDate = new Date(entries[entry].timestamp!);
       // Build string
       const entryString = `
- Date ${entryDate.toLocaleString()}
- <b><u>Emotion</u></b>
- ${entries[entry].emotion.emotionName} ${entries[entry].emotion.emotionEmoji}
+Date ${entryDate.toLocaleString()}
+<b><u>Emotion</u></b>
+${entries[entry].emotion.emotionName} ${entries[entry].emotion.emotionEmoji}
 
- <b><u>Emotion Description</u></b>
- ${entries[entry].emotion.emotionDescription}
+<b><u>Emotion Description</u></b>
+${entries[entry].emotion.emotionDescription}
 
- <b><u>Situation</u></b>
- ${entries[entry].situation}
+<b><u>Situation</u></b>
+${entries[entry].situation}
 
- <b><u>Automatic Thoughts</u></b>
- ${entries[entry].automaticThoughts}
- `;
+<b><u>Automatic Thoughts</u></b>
+${entries[entry].automaticThoughts}
+`;
       entriesInlineQueryResults.push(
         InlineQueryResultBuilder.article(
           String(entries[entry].id),
@@ -391,20 +327,12 @@ ${lastAnxietyScore?.action || "No data"}`,
   });
 
   jotBot.callbackQuery(
-    ["smhs", "set-404-image", "settings-back"],
+    ["smhs", "settings-back"],
     async (ctx) => {
       switch (ctx.callbackQuery.data) {
         case "smhs": {
-          if (!ctx.from) {
-            await ctx.reply("Error: Unable to identify user.");
-            return;
-          }
-          const settings = getSettingsById(ctx.from.id, dbFile);
-          logger.debug(
-            `Retrieved settings for user ${ctx.from.id}: ${
-              JSON.stringify(settings)
-            }`,
-          );
+          const settings = getSettingsById(ctx.from?.id!, dbFile);
+          console.log(settings);
           if (settings?.storeMentalHealthInfo) {
             settings.storeMentalHealthInfo = false;
             await ctx.editMessageText(
@@ -415,9 +343,7 @@ ${lastAnxietyScore?.action || "No data"}`,
               },
             );
           } else {
-            if (settings) {
-              settings.storeMentalHealthInfo = true;
-            }
+            settings!.storeMentalHealthInfo = true;
             await ctx.editMessageText(
               `I <b>WILL</b> store your GAD-7 and PHQ-9 scores`,
               {
@@ -426,13 +352,7 @@ ${lastAnxietyScore?.action || "No data"}`,
               },
             );
           }
-          if (settings) {
-            updateSettings(ctx.from.id, settings, dbFile);
-          }
-          break;
-        }
-        case "set-404-image": {
-          await ctx.conversation.enter("set_404_image");
+          updateSettings(ctx.from?.id!, settings!, dbFile);
           break;
         }
         case "settings-back": {
@@ -447,7 +367,7 @@ ${lastAnxietyScore?.action || "No data"}`,
   );
 
   jotBot.catch((err) => {
-    logger.error(`JotBot Error: ${err.message}`);
+    console.log(`JotBot Error: ${err.message}`);
   });
   jotBot.use(jotBotCommands);
   jotBot.filter(commandNotFound(jotBotCommands))

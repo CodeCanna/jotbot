@@ -43,7 +43,6 @@ Deno.test("Test getGadScoreById()", () => {
   insertGadScore(testGadScore, testDbFile);
 
   const gadScore = getGadScoreById(1, testDbFile);
-  if (!gadScore) throw new Error("Expected gadScore to be defined");
   assertObjectMatch(gadScore, testGadScore);
   Deno.removeSync(testDbFile);
 });

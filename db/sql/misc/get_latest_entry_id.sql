@@ -1,1 +1,1 @@
-SELECT MAX(id) as max_id FROM <TABLE_NAME>;
+SELECT seq FROM sqlite_sequence WHERE name='<TABLE_NAME>';

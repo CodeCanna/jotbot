@@ -1,7 +1,6 @@
 import { assertEquals } from "@std/assert/equals";
 import { testDbFile } from "../constants/paths.ts";
 import { createJournalTable, createUserTable } from "../db/migration.ts";
-import { logger } from "../utils/logger.ts";
 import {
   deleteJournalEntryById,
   getAllJournalEntriesByUserId,
@@ -70,7 +69,7 @@ Deno.test("Test updateJournalEntry()", () => {
 
   const queryResult = updateJournalEntry(updatedJournalEntry, testDbFile);
   assertEquals(queryResult?.changes, 1);
-  logger.debug(`Update result: ${JSON.stringify(queryResult)}`);
+  console.log(queryResult);
   Deno.removeSync(testDbFile);
 });
 
