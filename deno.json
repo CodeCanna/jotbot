@@ -2,7 +2,8 @@
   "tasks": {
     "dev": "deno run --allow-write --allow-read --allow-net --allow-env --watch main.ts",
     "test": "deno test --allow-write --allow-read --allow-net --allow-env ./tests/*",
-    "bin": "deno compile --allow-write --allow-read --allow-net --allow-env main.ts"
+    "bin": "deno compile --allow-write --allow-net --allow-env --allow-read -o ./bin/JotBot main.ts",
+    "bin-arm": "deno compile --allow-write --allow-net --allow-env --allow-read --target aarch64-unknown-linux-gnu -o ./bin/JotBotArm main.ts"
   },
   "imports": {
     "@grammyjs/commands": "npm:@grammyjs/commands@^1.2.0",
