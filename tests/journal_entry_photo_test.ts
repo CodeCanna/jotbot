@@ -6,7 +6,10 @@ import {
   createUserTable,
 } from "../db/migration.ts";
 import { insertJournalEntry } from "../models/journal.ts";
-import { insertJournalEntryPhoto } from "../models/journal_entry_photo.ts";
+import {
+  insertJournalEntryPhoto,
+  updateJournalEntryPhoto,
+} from "../models/journal_entry_photo.ts";
 import { insertUser } from "../models/user.ts";
 import { JournalEntry, JournalEntryPhoto, User } from "../types/types.ts";
 import { existsSync } from "node:fs";
@@ -32,6 +35,7 @@ const testJournalEntry: JournalEntry = {
 };
 
 const testJournalEntryPhoto: JournalEntryPhoto = {
+  id: 1,
   journalEntryId: 1,
   path: "/some/test/path.jpg",
   caption: "Test Caption",
@@ -53,4 +57,27 @@ Deno.test("Test insertJournalEntryPhoto()", () => {
   assertEquals(queryResult?.changes, 1);
   assertEquals(queryResult.lastInsertRowid, 1);
   Deno.removeSync(testDbFile);
+});
+
+Deno.test("Test updateJournalEntryPhoto", () => {
+  createUserTable(testDbFile);
+  createJournalTable(testDbFile);
+  createJournalEntryPhotosTable(testDbFile);
+  insertUser(testUser, testDbFile);
+  insertJournalEntry(testJournalEntry, testDbFile);
+  insertJournalEntryPhoto(
+    testJournalEntryPhoto,
+    testDbFile,
+  );
+
+  const updatedPhoto = testJournalEntryPhoto;
+  updatedPhoto.path = "/some/other/test/path/image.jpg";
+  const queryResults = updateJournalEntryPhoto(updatedPhoto, testDbFile);
+  assertEquals(queryResults.changes, 1);
+  assertEquals(queryResults.lastInsertRowid, 0);
+  Deno.removeSync(testDbFile);
+});
+
+Deno.test("Test deleteJournalEntryPhoto", () => {
+  // TODO
 });
