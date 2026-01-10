@@ -81,3 +81,11 @@ Deno.test("Test updateJournalEntryPhoto", () => {
 Deno.test("Test deleteJournalEntryPhoto", () => {
   // TODO
 });
+
+Deno.test("Test getJournalEntryPhotosByJournalEntryId", () => {
+  // TODO
+});
+
+Deno.test("Test getJournalEntryPhotoById", () => {
+
+});
